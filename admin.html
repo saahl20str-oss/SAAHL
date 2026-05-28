@@ -1,0 +1,971 @@
+<!DOCTYPE html>
+<html lang="ar" dir="rtl">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>ساهل — لوحة الأدمن</title>
+<link href="https://fonts.googleapis.com/css2?family=Cairo:wght@400;500;600;700&display=swap" rel="stylesheet">
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+<script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.1/dist/chart.umd.min.js"></script>
+<style>
+*{box-sizing:border-box;margin:0;padding:0}
+:root{
+  --teal:#0f766e;--teal-light:#ccfbf1;--teal-dark:#0d5f58;
+  --gold:#c9a227;
+  --bg:#f8fafc;--white:#ffffff;
+  --border:#e2e8f0;--border-light:#f1f5f9;
+  --text:#1e293b;--text-muted:#64748b;--text-light:#94a3b8;
+  --red:#dc2626;--red-light:#fee2e2;
+  --blue:#2563eb;--blue-light:#dbeafe;
+  --amber:#d97706;--amber-light:#fef3c7;
+  --green:#16a34a;--green-light:#dcfce7;
+  --purple:#7c3aed;--purple-light:#ede9fe;
+}
+body{font-family:'Cairo',sans-serif;background:var(--bg);color:var(--text);min-height:100vh}
+
+/* ===== TOPBAR ===== */
+.topbar{
+  position:fixed;top:0;right:0;left:0;z-index:100;
+  background:var(--white);border-bottom:1px solid var(--border);
+  height:60px;display:flex;align-items:center;justify-content:space-between;
+  padding:0 24px;
+}
+.topbar-brand{display:flex;align-items:center;gap:12px}
+.logo-wrap{
+  width:40px;height:40px;border-radius:10px;
+  background:#000;display:flex;align-items:center;justify-content:center;
+  overflow:hidden;flex-shrink:0;
+}
+.logo-wrap img{width:36px;height:36px;object-fit:contain}
+.brand-name{font-size:16px;font-weight:700;color:var(--text)}
+.brand-sub{font-size:11px;color:var(--text-muted)}
+.topbar-right{display:flex;align-items:center;gap:10px}
+.admin-badge{
+  background:var(--green-light);color:#166534;
+  font-size:11px;padding:4px 12px;border-radius:20px;font-weight:600;
+}
+.topbar-btn{
+  background:none;border:1px solid var(--border);border-radius:8px;
+  padding:6px 14px;font-size:13px;cursor:pointer;color:var(--text-muted);
+  font-family:'Cairo',sans-serif;transition:all .15s;
+}
+.topbar-btn:hover{background:var(--bg);color:var(--text)}
+#logout-btn{color:var(--red);border-color:var(--red-light)}
+#logout-btn:hover{background:var(--red-light)}
+
+/* ===== LAYOUT ===== */
+.main{display:flex;margin-top:60px;min-height:calc(100vh - 60px)}
+
+/* ===== SIDEBAR ===== */
+.sidebar{
+  width:210px;flex-shrink:0;background:var(--white);
+  border-left:1px solid var(--border);padding:20px 0;
+  position:fixed;top:60px;right:0;bottom:0;overflow-y:auto;
+}
+.nav-section{
+  font-size:10px;color:var(--text-light);
+  padding:14px 20px 4px;letter-spacing:.08em;font-weight:700;
+  text-transform:uppercase;
+}
+.nav-item{
+  display:flex;align-items:center;gap:10px;
+  padding:10px 20px;font-size:13px;cursor:pointer;
+  color:var(--text-muted);border-right:3px solid transparent;
+  transition:all .15s;user-select:none;
+}
+.nav-item:hover{background:var(--bg);color:var(--text)}
+.nav-item.active{
+  color:var(--teal);background:#f0fdf4;
+  border-right-color:var(--teal);font-weight:600;
+}
+.nav-item svg{width:17px;height:17px;flex-shrink:0}
+
+/* ===== CONTENT ===== */
+.content{flex:1;margin-right:210px;padding:28px;overflow:auto}
+.page{display:none}
+.page.active{display:block}
+.page-title{font-size:20px;font-weight:700;margin-bottom:24px;color:var(--text)}
+
+/* ===== STATS GRID ===== */
+.stats-grid{display:grid;grid-template-columns:repeat(4,1fr);gap:14px;margin-bottom:24px}
+.stat-card{
+  background:var(--white);border:1px solid var(--border);
+  border-radius:14px;padding:18px 20px;
+}
+.stat-icon{
+  width:38px;height:38px;border-radius:10px;
+  display:flex;align-items:center;justify-content:center;
+  font-size:19px;margin-bottom:12px;
+}
+.stat-icon.teal{background:var(--teal-light);color:var(--teal)}
+.stat-icon.blue{background:var(--blue-light);color:var(--blue)}
+.stat-icon.amber{background:var(--amber-light);color:var(--amber)}
+.stat-icon.green{background:var(--green-light);color:var(--green)}
+.stat-label{font-size:12px;color:var(--text-muted);margin-bottom:4px}
+.stat-value{font-size:26px;font-weight:700;color:var(--text);line-height:1}
+.stat-sub{font-size:11px;color:var(--text-light);margin-top:6px}
+
+/* ===== CARDS ===== */
+.card{
+  background:var(--white);border:1px solid var(--border);
+  border-radius:14px;padding:22px;margin-bottom:18px;
+}
+.card-header{
+  display:flex;align-items:center;justify-content:space-between;
+  margin-bottom:18px;
+}
+.card-title{font-size:14px;font-weight:600;color:var(--text)}
+.charts-row{display:grid;grid-template-columns:1.6fr 1fr;gap:16px;margin-bottom:18px}
+.chart-box{
+  background:var(--white);border:1px solid var(--border);
+  border-radius:14px;padding:22px;
+}
+
+/* ===== TABLE ===== */
+.tbl-wrap{overflow-x:auto}
+.tbl{width:100%;border-collapse:collapse;font-size:13px}
+.tbl th{
+  text-align:right;font-weight:600;font-size:11px;
+  color:var(--text-muted);padding:10px 14px;
+  border-bottom:1px solid var(--border);
+  background:var(--border-light);white-space:nowrap;
+}
+.tbl td{
+  padding:11px 14px;border-bottom:1px solid var(--border-light);
+  color:var(--text);vertical-align:middle;
+}
+.tbl tr:last-child td{border-bottom:none}
+.tbl tr:hover td{background:#f8fafc}
+
+/* ===== BADGES ===== */
+.badge{
+  display:inline-flex;align-items:center;
+  padding:3px 10px;border-radius:20px;
+  font-size:11px;font-weight:600;white-space:nowrap;
+}
+.badge.active{background:var(--green-light);color:#166534}
+.badge.expired{background:var(--red-light);color:#991b1b}
+.badge.pending{background:var(--amber-light);color:#92400e}
+.badge.booked{background:var(--blue-light);color:#1e40af}
+.badge.available{background:#d1fae5;color:#065f46}
+.badge.kafala{background:var(--purple-light);color:#5b21b6}
+
+/* ===== BUTTONS ===== */
+.btn{
+  display:inline-flex;align-items:center;gap:6px;
+  padding:7px 16px;border-radius:8px;font-size:13px;
+  cursor:pointer;font-family:'Cairo',sans-serif;
+  transition:all .15s;border:none;font-weight:500;
+}
+.btn-primary{background:var(--teal);color:#fff}
+.btn-primary:hover{background:var(--teal-dark)}
+.btn-outline{
+  background:none;border:1px solid var(--border);
+  color:var(--text-muted);
+}
+.btn-outline:hover{background:var(--bg);color:var(--text)}
+.btn-danger{background:none;border:1px solid var(--red-light);color:var(--red)}
+.btn-danger:hover{background:var(--red-light)}
+.btn-sm{padding:4px 10px;font-size:12px}
+
+/* ===== FILTER BAR ===== */
+.filter-bar{display:flex;gap:10px;margin-bottom:14px;align-items:center;flex-wrap:wrap}
+.filter-bar input,.filter-bar select{
+  font-family:'Cairo',sans-serif;font-size:13px;
+  padding:7px 12px;border:1px solid var(--border);
+  border-radius:8px;background:var(--white);
+  color:var(--text);outline:none;transition:border .15s;
+}
+.filter-bar input:focus,.filter-bar select:focus{border-color:var(--teal)}
+.filter-bar input{flex:1;min-width:180px}
+
+/* ===== AVATAR ===== */
+.avatar{
+  width:32px;height:32px;border-radius:8px;
+  display:flex;align-items:center;justify-content:center;
+  font-size:13px;font-weight:700;color:#fff;flex-shrink:0;
+}
+.row-flex{display:flex;align-items:center;gap:9px}
+
+/* ===== EMPTY STATE ===== */
+.empty-state{
+  text-align:center;padding:56px 24px;
+  color:var(--text-light);
+}
+.empty-state .empty-icon{font-size:44px;margin-bottom:14px;opacity:.35}
+.empty-state p{font-size:13px;line-height:1.7;color:var(--text-muted)}
+
+/* ===== LOADING ===== */
+.loading{
+  text-align:center;padding:40px;
+  color:var(--text-muted);font-size:13px;
+}
+.spinner{
+  width:24px;height:24px;border:2px solid var(--border);
+  border-top-color:var(--teal);border-radius:50%;
+  animation:spin .7s linear infinite;
+  margin:0 auto 10px;
+}
+@keyframes spin{to{transform:rotate(360deg)}}
+
+/* ===== LOGIN ===== */
+#login-screen{
+  position:fixed;inset:0;background:var(--bg);
+  display:flex;align-items:center;justify-content:center;
+  z-index:999;
+}
+.login-card{
+  background:var(--white);border:1px solid var(--border);
+  border-radius:20px;padding:40px;width:360px;
+  text-align:center;
+}
+.login-logo{
+  width:64px;height:64px;border-radius:16px;
+  background:#000;display:flex;align-items:center;
+  justify-content:center;margin:0 auto 16px;overflow:hidden;
+}
+.login-logo img{width:56px;height:56px;object-fit:contain}
+.login-card h2{font-size:20px;font-weight:700;margin-bottom:4px}
+.login-card p{font-size:13px;color:var(--text-muted);margin-bottom:28px}
+.form-group{margin-bottom:14px;text-align:right}
+.form-group label{
+  display:block;font-size:12px;font-weight:600;
+  color:var(--text-muted);margin-bottom:6px;
+}
+.form-group input{
+  width:100%;padding:10px 14px;border:1px solid var(--border);
+  border-radius:10px;font-family:'Cairo',sans-serif;
+  font-size:14px;outline:none;transition:border .15s;
+  color:var(--text);background:var(--white);
+}
+.form-group input:focus{border-color:var(--teal)}
+.login-btn{
+  width:100%;padding:11px;background:var(--teal);
+  color:#fff;border:none;border-radius:10px;
+  font-family:'Cairo',sans-serif;font-size:14px;
+  font-weight:600;cursor:pointer;margin-top:6px;
+  transition:background .15s;
+}
+.login-btn:hover{background:var(--teal-dark)}
+.login-err{
+  font-size:12px;color:var(--red);margin-top:10px;
+  min-height:18px;
+}
+
+/* ===== TOAST ===== */
+#toast{
+  position:fixed;bottom:24px;left:50%;transform:translateX(-50%);
+  background:#1e293b;color:#fff;padding:10px 22px;
+  border-radius:10px;font-size:13px;
+  opacity:0;transition:opacity .3s;pointer-events:none;z-index:9999;
+}
+#toast.show{opacity:1}
+
+/* ===== LEGEND ===== */
+.legend{display:flex;flex-direction:column;gap:7px;margin-top:14px;font-size:12px;color:var(--text-muted)}
+.legend-item{display:flex;align-items:center;gap:8px}
+.legend-dot{width:10px;height:10px;border-radius:2px;flex-shrink:0}
+
+/* ===== PAYMENTS STATS ===== */
+.pay-stats{display:grid;grid-template-columns:repeat(3,1fr);gap:14px;margin-bottom:18px}
+
+@media(max-width:900px){
+  .sidebar{display:none}
+  .content{margin-right:0}
+  .stats-grid{grid-template-columns:repeat(2,1fr)}
+  .charts-row{grid-template-columns:1fr}
+}
+</style>
+</head>
+<body>
+
+<!-- LOGIN SCREEN -->
+<div id="login-screen">
+  <div class="login-card">
+    <div class="login-logo">
+      <img src="logo.png" alt="ساهل" onerror="this.parentElement.innerHTML='<span style=font-size:22px;color:#c9a227;font-weight:700>س</span>'">
+    </div>
+    <h2>ساهل</h2>
+    <p>لوحة الأدمن — تسجيل الدخول</p>
+    <div class="form-group">
+      <label>البريد الإلكتروني</label>
+      <input type="email" id="login-email" placeholder="admin@saahl.ae">
+    </div>
+    <div class="form-group">
+      <label>كلمة المرور</label>
+      <input type="password" id="login-pass" placeholder="••••••••" onkeydown="if(event.key==='Enter')doLogin()">
+    </div>
+    <button class="login-btn" onclick="doLogin()">دخول</button>
+    <div class="login-err" id="login-err"></div>
+  </div>
+</div>
+
+<!-- TOPBAR -->
+<div class="topbar" id="topbar" style="display:none">
+  <div class="topbar-brand">
+    <div class="logo-wrap">
+      <img src="logo.png" alt="ساهل" onerror="this.parentElement.innerHTML='<span style=font-size:18px;color:#c9a227;font-weight:700>س</span>'">
+    </div>
+    <div>
+      <div class="brand-name">ساهل</div>
+      <div class="brand-sub">لوحة الأدمن</div>
+    </div>
+  </div>
+  <div class="topbar-right">
+    <span class="admin-badge">أدمن</span>
+    <button class="topbar-btn" id="logout-btn" onclick="doLogout()">خروج</button>
+  </div>
+</div>
+
+<!-- MAIN -->
+<div class="main" id="main-wrap" style="display:none">
+
+  <!-- SIDEBAR -->
+  <div class="sidebar">
+    <div class="nav-section">الرئيسية</div>
+    <div class="nav-item active" onclick="showPage('overview',this)">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><rect x="3" y="3" width="7" height="7" rx="1"/><rect x="14" y="3" width="7" height="7" rx="1"/><rect x="3" y="14" width="7" height="7" rx="1"/><rect x="14" y="14" width="7" height="7" rx="1"/></svg>
+      نظرة عامة
+    </div>
+    <div class="nav-section">الإدارة</div>
+    <div class="nav-item" onclick="showPage('offices',this)">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><path d="M3 21h18M5 21V7l7-4 7 4v14M9 21v-4h6v4"/></svg>
+      المكاتب
+    </div>
+    <div class="nav-item" onclick="showPage('sponsors',this)">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M23 21v-2a4 4 0 0 0-3-3.87M16 3.13a4 4 0 0 1 0 7.75"/></svg>
+      الكفلاء
+    </div>
+    <div class="nav-item" onclick="showPage('maids',this)">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><rect x="2" y="5" width="20" height="14" rx="2"/><path d="M16 10a2 2 0 1 1-4 0 2 2 0 0 1 4 0zM6 10h2M6 14h4"/></svg>
+      العاملات
+    </div>
+    <div class="nav-item" onclick="showPage('bookings',this)">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><rect x="3" y="4" width="18" height="18" rx="2"/><path d="M16 2v4M8 2v4M3 10h18"/><path d="M9 16l2 2 4-4"/></svg>
+      الحجوزات
+    </div>
+    <div class="nav-section">المالية</div>
+    <div class="nav-item" onclick="showPage('payments',this)">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><rect x="1" y="4" width="22" height="16" rx="2"/><path d="M1 10h22"/></svg>
+      المدفوعات
+    </div>
+    <div class="nav-item" onclick="showPage('kafala',this)">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><path d="M7 16V4m0 0L3 8m4-4 4 4M17 8v12m0 0 4-4m-4 4-4-4"/></svg>
+      نقل الكفالة
+    </div>
+  </div>
+
+  <!-- CONTENT -->
+  <div class="content">
+
+    <!-- نظرة عامة -->
+    <div id="page-overview" class="page active">
+      <div class="page-title">نظرة عامة</div>
+      <div class="stats-grid">
+        <div class="stat-card">
+          <div class="stat-icon teal">🏢</div>
+          <div class="stat-label">المكاتب المسجلة</div>
+          <div class="stat-value" id="stat-offices">—</div>
+          <div class="stat-sub" id="stat-offices-sub">جارٍ التحميل...</div>
+        </div>
+        <div class="stat-card">
+          <div class="stat-icon blue">👥</div>
+          <div class="stat-label">الكفلاء المسجلون</div>
+          <div class="stat-value" id="stat-sponsors">—</div>
+          <div class="stat-sub" id="stat-sponsors-sub">جارٍ التحميل...</div>
+        </div>
+        <div class="stat-card">
+          <div class="stat-icon amber">💰</div>
+          <div class="stat-label">إيرادات هذا الشهر</div>
+          <div class="stat-value" id="stat-revenue">—</div>
+          <div class="stat-sub" id="stat-revenue-sub">جارٍ التحميل...</div>
+        </div>
+        <div class="stat-card">
+          <div class="stat-icon green">📋</div>
+          <div class="stat-label">الحجوزات النشطة</div>
+          <div class="stat-value" id="stat-bookings">—</div>
+          <div class="stat-sub" id="stat-bookings-sub">جارٍ التحميل...</div>
+        </div>
+      </div>
+
+      <div class="charts-row">
+        <div class="chart-box">
+          <div class="card-header"><span class="card-title">الإيرادات — آخر 6 أشهر (AED)</span></div>
+          <div style="position:relative;height:200px"><canvas id="revChart"></canvas></div>
+        </div>
+        <div class="chart-box">
+          <div class="card-header"><span class="card-title">توزيع الإيرادات</span></div>
+          <div style="position:relative;height:160px"><canvas id="pieChart"></canvas></div>
+          <div class="legend">
+            <div class="legend-item"><span class="legend-dot" style="background:#0f766e"></span>اشتراك مكاتب — 70 AED/شهر</div>
+            <div class="legend-item"><span class="legend-dot" style="background:#3b82f6"></span>عمولة حجز — 69 AED</div>
+            <div class="legend-item"><span class="legend-dot" style="background:#f59e0b"></span>إعلان كفالة — 30 AED/يوم</div>
+          </div>
+        </div>
+      </div>
+
+      <div class="card">
+        <div class="card-header">
+          <span class="card-title">آخر الحجوزات</span>
+          <button class="btn btn-outline btn-sm" onclick="showPage('bookings',document.querySelector('.nav-item:nth-child(6)'))">عرض الكل</button>
+        </div>
+        <div id="recent-bookings-wrap">
+          <div class="loading"><div class="spinner"></div>جارٍ التحميل...</div>
+        </div>
+      </div>
+    </div>
+
+    <!-- المكاتب -->
+    <div id="page-offices" class="page">
+      <div class="page-title">إدارة المكاتب</div>
+      <div class="filter-bar">
+        <input type="text" id="offices-search" placeholder="🔍 بحث باسم المكتب..." oninput="filterOffices()">
+        <select id="offices-status" onchange="filterOffices()">
+          <option value="">الكل</option>
+          <option value="active">نشط</option>
+          <option value="expired">منتهي</option>
+        </select>
+      </div>
+      <div class="card" style="padding:0;overflow:hidden">
+        <div id="offices-wrap">
+          <div class="loading"><div class="spinner"></div>جارٍ التحميل...</div>
+        </div>
+      </div>
+    </div>
+
+    <!-- الكفلاء -->
+    <div id="page-sponsors" class="page">
+      <div class="page-title">إدارة الكفلاء</div>
+      <div class="filter-bar">
+        <input type="text" id="sponsors-search" placeholder="🔍 بحث باسم الكفيل..." oninput="filterSponsors()">
+      </div>
+      <div class="card" style="padding:0;overflow:hidden">
+        <div id="sponsors-wrap">
+          <div class="loading"><div class="spinner"></div>جارٍ التحميل...</div>
+        </div>
+      </div>
+    </div>
+
+    <!-- العاملات -->
+    <div id="page-maids" class="page">
+      <div class="page-title">إدارة العاملات</div>
+      <div class="filter-bar">
+        <input type="text" id="maids-search" placeholder="🔍 بحث..." oninput="filterMaids()">
+        <select id="maids-nationality" onchange="filterMaids()">
+          <option value="">كل الجنسيات</option>
+          <option value="إندونيسيا">إندونيسيا</option>
+          <option value="الفلبين">الفلبين</option>
+          <option value="إثيوبيا">إثيوبيا</option>
+          <option value="نيبال">نيبال</option>
+          <option value="سريلانكا">سريلانكا</option>
+          <option value="بنغلاديش">بنغلاديش</option>
+        </select>
+        <select id="maids-status" onchange="filterMaids()">
+          <option value="">كل الحالات</option>
+          <option value="available">متاحة</option>
+          <option value="booked">محجوزة</option>
+          <option value="kafala">نقل كفالة</option>
+        </select>
+      </div>
+      <div class="card" style="padding:0;overflow:hidden">
+        <div id="maids-wrap">
+          <div class="loading"><div class="spinner"></div>جارٍ التحميل...</div>
+        </div>
+      </div>
+    </div>
+
+    <!-- الحجوزات -->
+    <div id="page-bookings" class="page">
+      <div class="page-title">إدارة الحجوزات</div>
+      <div class="card" style="padding:0;overflow:hidden">
+        <div id="bookings-wrap">
+          <div class="loading"><div class="spinner"></div>جارٍ التحميل...</div>
+        </div>
+      </div>
+    </div>
+
+    <!-- المدفوعات -->
+    <div id="page-payments" class="page">
+      <div class="page-title">المدفوعات</div>
+      <div class="pay-stats">
+        <div class="stat-card">
+          <div class="stat-label">اشتراكات المكاتب</div>
+          <div class="stat-value" style="font-size:22px" id="pay-offices">0 AED</div>
+          <div class="stat-sub">70 AED × عدد المكاتب النشطة</div>
+        </div>
+        <div class="stat-card">
+          <div class="stat-label">عمولات الحجز</div>
+          <div class="stat-value" style="font-size:22px" id="pay-bookings">0 AED</div>
+          <div class="stat-sub">69 AED × عدد الحجوزات</div>
+        </div>
+        <div class="stat-card">
+          <div class="stat-label">إعلانات الكفالة</div>
+          <div class="stat-value" style="font-size:22px" id="pay-kafala">0 AED</div>
+          <div class="stat-sub">30 AED × عدد الأيام</div>
+        </div>
+      </div>
+      <div class="card" style="padding:0;overflow:hidden">
+        <div id="payments-wrap">
+          <div class="loading"><div class="spinner"></div>جارٍ التحميل...</div>
+        </div>
+      </div>
+    </div>
+
+    <!-- نقل الكفالة -->
+    <div id="page-kafala" class="page">
+      <div class="page-title">إعلانات نقل الكفالة</div>
+      <div class="card" style="padding:0;overflow:hidden">
+        <div id="kafala-wrap">
+          <div class="loading"><div class="spinner"></div>جارٍ التحميل...</div>
+        </div>
+      </div>
+    </div>
+
+  </div><!-- /content -->
+</div><!-- /main -->
+
+<div id="toast"></div>
+
+<script>
+// ===== SUPABASE INIT =====
+const SUPA_URL = 'https://ytjrtflmqydnpepdyafa.supabase.co';
+const SUPA_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Inl0anJ0ZmxtcXlkbnBlcGR5YWZhIiwicm9sZSI6ImFub24iLCJpYXQiOjE3Nzk1Mzk1MjksImV4cCI6MjA5NTExNTUyOX0.8ObScEKDLhsBjmfgkBqFdadx5xA99pw0CkRWCzxASpw';
+const { createClient } = supabase;
+const db = createClient(SUPA_URL, SUPA_KEY);
+
+// ADMIN EMAIL — غيّر هذا إلى إيميلك الحقيقي
+const ADMIN_EMAIL = 'saahl2030@gmail.com';
+
+// ===== GLOBAL DATA =====
+let allOffices = [], allSponsors = [], allMaids = [], allBookings = [], allPayments = [], allKafala = [];
+let revChart, pieChart;
+
+// ===== COLORS FOR AVATARS =====
+const colors = ['#0f766e','#2563eb','#7c3aed','#d97706','#059669','#dc2626','#0891b2'];
+const avatarColor = (str) => colors[(str||'').charCodeAt(0) % colors.length];
+const initial = (str) => (str||'?')[0];
+
+// ===== TOAST =====
+function toast(msg, dur=2500){
+  const t = document.getElementById('toast');
+  t.textContent = msg; t.classList.add('show');
+  setTimeout(()=>t.classList.remove('show'), dur);
+}
+
+// ===== FORMAT DATE =====
+function fmtDate(d){
+  if(!d) return '—';
+  const dt = new Date(d);
+  return dt.toLocaleDateString('ar-AE',{year:'numeric',month:'short',day:'numeric'});
+}
+
+// ===== EMPTY STATE =====
+function emptyHTML(msg){
+  return `<div class="empty-state">
+    <div class="empty-icon">📭</div>
+    <p>${msg}<br><small>ستظهر هنا عند أول تسجيل</small></p>
+  </div>`;
+}
+
+// ===== PAGE NAVIGATION =====
+function showPage(id, el){
+  document.querySelectorAll('.page').forEach(p=>p.classList.remove('active'));
+  document.querySelectorAll('.nav-item').forEach(n=>n.classList.remove('active'));
+  document.getElementById('page-'+id).classList.add('active');
+  if(el) el.classList.add('active');
+  loadPage(id);
+}
+
+// ===== LOGIN =====
+async function doLogin(){
+  const email = document.getElementById('login-email').value.trim();
+  const pass  = document.getElementById('login-pass').value;
+  const errEl = document.getElementById('login-err');
+  errEl.textContent = '';
+  if(!email || !pass){ errEl.textContent='أدخل البريد وكلمة المرور'; return; }
+  const {data, error} = await db.auth.signInWithPassword({email, password:pass});
+  if(error){ errEl.textContent='بيانات الدخول غير صحيحة'; return; }
+  if(email !== ADMIN_EMAIL){ await db.auth.signOut(); errEl.textContent='ليس لديك صلاحية الأدمن'; return; }
+  showApp();
+}
+
+async function doLogout(){
+  await db.auth.signOut();
+  document.getElementById('login-screen').style.display='flex';
+  document.getElementById('topbar').style.display='none';
+  document.getElementById('main-wrap').style.display='none';
+}
+
+function showApp(){
+  document.getElementById('login-screen').style.display='none';
+  document.getElementById('topbar').style.display='flex';
+  document.getElementById('main-wrap').style.display='flex';
+  loadAll();
+}
+
+// ===== CHECK SESSION ON LOAD =====
+window.addEventListener('DOMContentLoaded', async ()=>{
+  const {data:{session}} = await db.auth.getSession();
+  if(session && session.user.email === ADMIN_EMAIL) showApp();
+});
+
+// ===== LOAD ALL DATA =====
+async function loadAll(){
+  await Promise.all([
+    loadOverviewStats(),
+    loadOffices(),
+    loadSponsors(),
+    loadMaids(),
+    loadBookings(),
+    loadPayments(),
+    loadKafala(),
+  ]);
+  buildCharts();
+}
+
+function loadPage(id){
+  // Data already loaded on init; charts rebuild if needed
+  if(id==='overview') buildCharts();
+}
+
+// ===== OVERVIEW STATS =====
+async function loadOverviewStats(){
+  // Offices count
+  const {count:oc} = await db.from('office_profiles').select('*',{count:'exact',head:true});
+  document.getElementById('stat-offices').textContent = oc ?? 0;
+  document.getElementById('stat-offices-sub').textContent = oc ? `${oc} مكتب مسجل` : 'لا يوجد مكاتب بعد';
+
+  // Sponsors count
+  const {count:sc} = await db.from('sponsor_profiles').select('*',{count:'exact',head:true});
+  document.getElementById('stat-sponsors').textContent = sc ?? 0;
+  document.getElementById('stat-sponsors-sub').textContent = sc ? `${sc} كفيل مسجل` : 'لا يوجد كفلاء بعد';
+
+  // Revenue this month from payments
+  const now = new Date();
+  const startOfMonth = new Date(now.getFullYear(), now.getMonth(), 1).toISOString();
+  const {data:pays} = await db.from('payments').select('amount').gte('created_at', startOfMonth);
+  const rev = pays ? pays.reduce((s,p)=>s+(p.amount||0),0) : 0;
+  document.getElementById('stat-revenue').textContent = rev.toLocaleString();
+  document.getElementById('stat-revenue-sub').textContent = rev ? `AED — هذا الشهر` : 'AED — لا توجد مدفوعات بعد';
+
+  // Active bookings
+  const {count:bc} = await db.from('bookings').select('*',{count:'exact',head:true}).eq('status','booked');
+  document.getElementById('stat-bookings').textContent = bc ?? 0;
+  document.getElementById('stat-bookings-sub').textContent = bc ? `${bc} حجز نشط` : 'لا توجد حجوزات بعد';
+
+  // Recent bookings table
+  const {data:rb} = await db.from('bookings').select('*').order('created_at',{ascending:false}).limit(5);
+  allBookings = rb || [];
+  renderRecentBookings(allBookings);
+}
+
+function renderRecentBookings(data){
+  const wrap = document.getElementById('recent-bookings-wrap');
+  if(!data || data.length===0){ wrap.innerHTML = emptyHTML('لا توجد حجوزات حتى الآن'); return; }
+  wrap.innerHTML = `<div class="tbl-wrap"><table class="tbl">
+    <thead><tr><th>الكفيل</th><th>العاملة</th><th>المكتب</th><th>التاريخ</th><th>الحالة</th><th>العمولة</th></tr></thead>
+    <tbody>${data.map(b=>`
+    <tr>
+      <td>${b.sponsor_name||'—'}</td>
+      <td>${b.maid_name||'—'}</td>
+      <td>${b.office_name||'—'}</td>
+      <td>${fmtDate(b.created_at)}</td>
+      <td><span class="badge ${b.status==='booked'?'booked':b.status==='completed'?'active':'pending'}">${b.status==='booked'?'محجوزة':b.status==='completed'?'مكتملة':'معلقة'}</span></td>
+      <td style="font-weight:600;color:var(--teal)">69 AED</td>
+    </tr>`).join('')}</tbody>
+  </table></div>`;
+}
+
+// ===== OFFICES =====
+async function loadOffices(){
+  const {data} = await db.from('office_profiles').select('*').order('created_at',{ascending:false});
+  allOffices = data || [];
+  renderOffices(allOffices);
+}
+
+function renderOffices(data){
+  const wrap = document.getElementById('offices-wrap');
+  if(!data.length){ wrap.innerHTML = emptyHTML('لا توجد مكاتب مسجلة حتى الآن'); return; }
+  wrap.innerHTML = `<div class="tbl-wrap"><table class="tbl">
+    <thead><tr><th>المكتب</th><th>الإمارة</th><th>البريد</th><th>تاريخ التسجيل</th><th>الحالة</th><th>إجراء</th></tr></thead>
+    <tbody>${data.map(o=>{
+      const isActive = o.subscription_status==='active';
+      return `<tr>
+        <td><div class="row-flex"><div class="avatar" style="background:${avatarColor(o.office_name)}">${initial(o.office_name)}</div>${o.office_name||'—'}</div></td>
+        <td>${o.city||'—'}</td>
+        <td>${o.email||'—'}</td>
+        <td>${fmtDate(o.created_at)}</td>
+        <td><span class="badge ${isActive?'active':'expired'}">${isActive?'نشط':'منتهي'}</span></td>
+        <td><button class="btn btn-outline btn-sm ${isActive?'btn-danger':''}" onclick="toggleOffice('${o.id}','${o.subscription_status}')">${isActive?'تعليق':'تفعيل'}</button></td>
+      </tr>`;
+    }).join('')}</tbody>
+  </table></div>`;
+}
+
+function filterOffices(){
+  const q = document.getElementById('offices-search').value.toLowerCase();
+  const s = document.getElementById('offices-status').value;
+  const filtered = allOffices.filter(o=>{
+    const matchQ = !q || (o.office_name||'').toLowerCase().includes(q);
+    const matchS = !s || o.subscription_status===s;
+    return matchQ && matchS;
+  });
+  renderOffices(filtered);
+}
+
+async function toggleOffice(id, status){
+  const newStatus = status==='active' ? 'expired' : 'active';
+  const {error} = await db.from('office_profiles').update({subscription_status:newStatus}).eq('id',id);
+  if(error){ toast('حدث خطأ'); return; }
+  toast(newStatus==='active'?'تم تفعيل المكتب ✓':'تم تعليق المكتب');
+  loadOffices();
+}
+
+// ===== SPONSORS =====
+async function loadSponsors(){
+  const {data} = await db.from('sponsor_profiles').select('*').order('created_at',{ascending:false});
+  allSponsors = data || [];
+  renderSponsors(allSponsors);
+}
+
+function renderSponsors(data){
+  const wrap = document.getElementById('sponsors-wrap');
+  if(!data.length){ wrap.innerHTML = emptyHTML('لا يوجد كفلاء مسجلون حتى الآن'); return; }
+  wrap.innerHTML = `<div class="tbl-wrap"><table class="tbl">
+    <thead><tr><th>الكفيل</th><th>الإمارة</th><th>البريد</th><th>تاريخ التسجيل</th><th>إجراء</th></tr></thead>
+    <tbody>${data.map(s=>`
+    <tr>
+      <td><div class="row-flex"><div class="avatar" style="background:${avatarColor(s.full_name)}">${initial(s.full_name)}</div>${s.full_name||'—'}</div></td>
+      <td>${s.city||'—'}</td>
+      <td>${s.email||'—'}</td>
+      <td>${fmtDate(s.created_at)}</td>
+      <td><button class="btn btn-danger btn-sm" onclick="deleteSponsor('${s.id}')">حذف</button></td>
+    </tr>`).join('')}</tbody>
+  </table></div>`;
+}
+
+function filterSponsors(){
+  const q = document.getElementById('sponsors-search').value.toLowerCase();
+  renderSponsors(allSponsors.filter(s=>!q||(s.full_name||'').toLowerCase().includes(q)));
+}
+
+async function deleteSponsor(id){
+  if(!confirm('هل أنت متأكد من حذف هذا الكفيل؟')) return;
+  const {error} = await db.from('sponsor_profiles').delete().eq('id',id);
+  if(error){ toast('حدث خطأ'); return; }
+  toast('تم حذف الكفيل ✓');
+  loadSponsors();
+}
+
+// ===== MAIDS =====
+async function loadMaids(){
+  const {data} = await db.from('maids').select('*').order('created_at',{ascending:false});
+  allMaids = data || [];
+  renderMaids(allMaids);
+}
+
+function renderMaids(data){
+  const wrap = document.getElementById('maids-wrap');
+  if(!data.length){ wrap.innerHTML = emptyHTML('لا توجد عاملات مضافة حتى الآن'); return; }
+  wrap.innerHTML = `<div class="tbl-wrap"><table class="tbl">
+    <thead><tr><th>الاسم</th><th>الجنسية</th><th>الخبرة</th><th>المكتب</th><th>الحالة</th><th>إجراء</th></tr></thead>
+    <tbody>${data.map(m=>{
+      const stMap = {available:'available',booked:'booked',kafala:'kafala'};
+      const stLabel = {available:'متاحة',booked:'محجوزة',kafala:'نقل كفالة'};
+      return `<tr>
+        <td><div class="row-flex"><div class="avatar" style="background:${avatarColor(m.name)}">${initial(m.name)}</div>${m.name||'—'}</div></td>
+        <td>${m.nationality||'—'}</td>
+        <td>${m.experience||'—'}</td>
+        <td>${m.office_name||'—'}</td>
+        <td><span class="badge ${stMap[m.status]||'pending'}">${stLabel[m.status]||m.status||'—'}</span></td>
+        <td><button class="btn btn-outline btn-sm">عرض</button></td>
+      </tr>`;
+    }).join('')}</tbody>
+  </table></div>`;
+}
+
+function filterMaids(){
+  const q = document.getElementById('maids-search').value.toLowerCase();
+  const nat = document.getElementById('maids-nationality').value;
+  const st = document.getElementById('maids-status').value;
+  renderMaids(allMaids.filter(m=>{
+    return (!q||(m.name||'').toLowerCase().includes(q))
+        && (!nat||m.nationality===nat)
+        && (!st||m.status===st);
+  }));
+}
+
+// ===== BOOKINGS =====
+async function loadBookings(){
+  const {data} = await db.from('bookings').select('*').order('created_at',{ascending:false});
+  allBookings = data || [];
+  renderBookingsPage(allBookings);
+}
+
+function renderBookingsPage(data){
+  const wrap = document.getElementById('bookings-wrap');
+  if(!data.length){ wrap.innerHTML = emptyHTML('لا توجد حجوزات حتى الآن'); return; }
+  wrap.innerHTML = `<div class="tbl-wrap"><table class="tbl">
+    <thead><tr><th>الكفيل</th><th>العاملة</th><th>المكتب</th><th>التاريخ</th><th>الحالة</th><th>العمولة</th></tr></thead>
+    <tbody>${data.map(b=>`
+    <tr>
+      <td>${b.sponsor_name||'—'}</td>
+      <td>${b.maid_name||'—'}</td>
+      <td>${b.office_name||'—'}</td>
+      <td>${fmtDate(b.created_at)}</td>
+      <td><span class="badge ${b.status==='booked'?'booked':b.status==='completed'?'active':'pending'}">${b.status==='booked'?'محجوزة':b.status==='completed'?'مكتملة':'معلقة'}</span></td>
+      <td style="font-weight:600;color:var(--teal)">69 AED</td>
+    </tr>`).join('')}</tbody>
+  </table></div>`;
+}
+
+// ===== PAYMENTS =====
+async function loadPayments(){
+  const {data} = await db.from('payments').select('*').order('created_at',{ascending:false});
+  allPayments = data || [];
+  // Calculate totals by type
+  let officeTotal=0, bookingTotal=0, kafalaTotal=0;
+  allPayments.forEach(p=>{
+    if(p.type==='subscription') officeTotal += p.amount||0;
+    else if(p.type==='booking') bookingTotal += p.amount||0;
+    else if(p.type==='kafala_ad') kafalaTotal += p.amount||0;
+  });
+  document.getElementById('pay-offices').textContent   = officeTotal.toLocaleString()+' AED';
+  document.getElementById('pay-bookings').textContent  = bookingTotal.toLocaleString()+' AED';
+  document.getElementById('pay-kafala').textContent    = kafalaTotal.toLocaleString()+' AED';
+  renderPayments(allPayments);
+}
+
+function renderPayments(data){
+  const wrap = document.getElementById('payments-wrap');
+  if(!data.length){ wrap.innerHTML = emptyHTML('لا توجد مدفوعات حتى الآن'); return; }
+  const typeLabel = {subscription:'اشتراك شهري',booking:'عمولة حجز',kafala_ad:'إعلان كفالة'};
+  wrap.innerHTML = `<div class="tbl-wrap"><table class="tbl">
+    <thead><tr><th>المستخدم</th><th>النوع</th><th>المبلغ</th><th>التاريخ</th><th>الحالة</th></tr></thead>
+    <tbody>${data.map(p=>`
+    <tr>
+      <td>${p.user_name||p.user_id||'—'}</td>
+      <td>${typeLabel[p.type]||p.type||'—'}</td>
+      <td style="font-weight:600;color:var(--teal)">${(p.amount||0).toLocaleString()} AED</td>
+      <td>${fmtDate(p.created_at)}</td>
+      <td><span class="badge ${p.status==='paid'?'active':'expired'}">${p.status==='paid'?'مكتمل':'فشل'}</span></td>
+    </tr>`).join('')}</tbody>
+  </table></div>`;
+}
+
+// ===== KAFALA =====
+async function loadKafala(){
+  const {data} = await db.from('kafala_ads').select('*').order('created_at',{ascending:false});
+  allKafala = data || [];
+  renderKafala(allKafala);
+}
+
+function renderKafala(data){
+  const wrap = document.getElementById('kafala-wrap');
+  if(!data.length){ wrap.innerHTML = emptyHTML('لا توجد إعلانات نقل كفالة حتى الآن'); return; }
+  wrap.innerHTML = `<div class="tbl-wrap"><table class="tbl">
+    <thead><tr><th>العاملة</th><th>الإمارة</th><th>الجنسية</th><th>الأيام</th><th>ينتهي</th><th>المبلغ</th><th>الحالة</th><th>إجراء</th></tr></thead>
+    <tbody>${data.map(k=>{
+      const days = k.days || 1;
+      const total = days * 30;
+      const isActive = k.status==='active';
+      return `<tr>
+        <td>${k.maid_name||'—'}</td>
+        <td>${k.city||'—'}</td>
+        <td>${k.nationality||'—'}</td>
+        <td>${days} يوم</td>
+        <td>${fmtDate(k.expires_at)}</td>
+        <td style="font-weight:600;color:var(--teal)">${total} AED</td>
+        <td><span class="badge ${isActive?'active':'expired'}">${isActive?'نشط':'منتهي'}</span></td>
+        <td><button class="btn ${isActive?'btn-danger':'btn-outline'} btn-sm" onclick="toggleKafala('${k.id}','${k.status}')">${isActive?'إيقاف':'تجديد'}</button></td>
+      </tr>`;
+    }).join('')}</tbody>
+  </table></div>`;
+}
+
+async function toggleKafala(id, status){
+  const newStatus = status==='active'?'inactive':'active';
+  await db.from('kafala_ads').update({status:newStatus}).eq('id',id);
+  toast(newStatus==='active'?'تم تفعيل الإعلان ✓':'تم إيقاف الإعلان');
+  loadKafala();
+}
+
+// ===== CHARTS =====
+function buildCharts(){
+  buildRevChart();
+  buildPieChart();
+}
+
+function buildRevChart(){
+  const ctx = document.getElementById('revChart');
+  if(!ctx) return;
+  if(revChart) revChart.destroy();
+
+  // Group payments by month (last 6 months)
+  const months = [];
+  const labels = [];
+  const monthNames = ['يناير','فبراير','مارس','أبريل','مايو','يونيو','يوليو','أغسطس','سبتمبر','أكتوبر','نوفمبر','ديسمبر'];
+  const now = new Date();
+  for(let i=5;i>=0;i--){
+    const d = new Date(now.getFullYear(), now.getMonth()-i, 1);
+    months.push({year:d.getFullYear(), month:d.getMonth()});
+    labels.push(monthNames[d.getMonth()]);
+  }
+  const data = months.map(m=>{
+    return allPayments
+      .filter(p=>{ const d=new Date(p.created_at); return d.getFullYear()===m.year && d.getMonth()===m.month; })
+      .reduce((s,p)=>s+(p.amount||0),0);
+  });
+
+  revChart = new Chart(ctx, {
+    type:'bar',
+    data:{
+      labels,
+      datasets:[{
+        label:'AED',data,
+        backgroundColor:'#0f766e',borderRadius:6,borderSkipped:false
+      }]
+    },
+    options:{
+      responsive:true,maintainAspectRatio:false,
+      plugins:{legend:{display:false}},
+      scales:{
+        y:{beginAtZero:true,ticks:{callback:v=>v.toLocaleString()+' د',font:{family:'Cairo',size:11},color:'#94a3b8'},grid:{color:'rgba(0,0,0,0.04)'}},
+        x:{ticks:{font:{family:'Cairo',size:11},color:'#94a3b8'},grid:{display:false}}
+      }
+    }
+  });
+}
+
+function buildPieChart(){
+  const ctx = document.getElementById('pieChart');
+  if(!ctx) return;
+  if(pieChart) pieChart.destroy();
+
+  let subTotal=0, bookTotal=0, kafTotal=0;
+  allPayments.forEach(p=>{
+    if(p.type==='subscription') subTotal+=p.amount||0;
+    else if(p.type==='booking') bookTotal+=p.amount||0;
+    else if(p.type==='kafala_ad') kafTotal+=p.amount||0;
+  });
+  const total = subTotal+bookTotal+kafTotal;
+  const data = total===0 ? [1,1,1] : [subTotal,bookTotal,kafTotal];
+
+  pieChart = new Chart(ctx,{
+    type:'doughnut',
+    data:{
+      labels:['اشتراك مكاتب','عمولة حجز','إعلان كفالة'],
+      datasets:[{data,backgroundColor:['#0f766e','#3b82f6','#f59e0b'],borderWidth:0,hoverOffset:4}]
+    },
+    options:{
+      responsive:true,maintainAspectRatio:false,cutout:'72%',
+      plugins:{
+        legend:{display:false},
+        tooltip:{callbacks:{label:ctx=>total===0?' لا توجد بيانات بعد':` ${ctx.label}: ${ctx.raw.toLocaleString()} AED`}}
+      }
+    }
+  });
+}
+</script>
+</body>
+</html>
