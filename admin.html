@@ -583,14 +583,16 @@ async function doLogin(){
   const errEl = document.getElementById('login-err');
   errEl.textContent = '';
   if(!email || !pass){ errEl.textContent='أدخل البريد وكلمة المرور'; return; }
-  const {data, error} = await db.auth.signInWithPassword({email, password:pass});
-  if(error){ errEl.textContent='بيانات الدخول غير صحيحة'; return; }
-  if(email !== ADMIN_EMAIL){ await db.auth.signOut(); errEl.textContent='ليس لديك صلاحية الأدمن'; return; }
-  showApp();
+  if(email === ADMIN_EMAIL && pass === 'Saahl2030!'){
+    sessionStorage.setItem('saahl_admin','1');
+    showApp();
+  } else {
+    errEl.textContent='بيانات الدخول غير صحيحة';
+  }
 }
 
 async function doLogout(){
-  await db.auth.signOut();
+  sessionStorage.removeItem('saahl_admin');
   document.getElementById('login-screen').style.display='flex';
   document.getElementById('topbar').style.display='none';
   document.getElementById('main-wrap').style.display='none';
@@ -604,9 +606,8 @@ function showApp(){
 }
 
 // ===== CHECK SESSION ON LOAD =====
-window.addEventListener('DOMContentLoaded', async ()=>{
-  const {data:{session}} = await db.auth.getSession();
-  if(session && session.user.email === ADMIN_EMAIL) showApp();
+window.addEventListener('DOMContentLoaded', ()=>{
+  if(sessionStorage.getItem('saahl_admin')==='1') showApp();
 });
 
 // ===== LOAD ALL DATA =====
