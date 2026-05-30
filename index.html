@@ -661,7 +661,21 @@ footer{
 </style>
 </head>
 <body>
+<body>
+<div id="ad-strip"></div>
+<script>
+(async()=>{
+  const r=await fetch('https://ytjrtflmqydnpepdyafa.supabase.co/rest/v1/strip_ads?status=eq.active&select=ad_topic,advertiser_name,phone',{headers:{'apikey':'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Inl0anJ0ZmxtcXlkbnBlcGR5YWZhIiwicm9sZSI6ImFub24iLCJpYXQiOjE3Nzk1Mzk1MjksImV4cCI6MjA5NTExNTUyOX0.8ObScEKDLhsBjmfgkBqFdadx5xA99pw0CkRWCzxASpw'}});
+  const ads=await r.json();
+  if(!ads.length)return;
+  const s=document.getElementById('ad-strip');
+  s.style.cssText='background:#C9A84C;color:#fff;padding:8px 0;overflow:hidden;white-space:nowrap;font-family:Tajawal,sans-serif;font-size:14px;position:relative;z-index:999';
+  const text=ads.map(a=>`📢 ${a.ad_topic} — ${a.advertiser_name} ${a.phone?'| '+a.phone:''}`).join('   ✦   ');
+  s.innerHTML=`<div style="display:inline-block;animation:scroll 20s linear infinite">　${text}　${text}</div><a href="advertise.html" style="position:absolute;left:12px;top:50%;transform:translateY(-50%);background:#fff;color:#C9A84C;padding:3px 10px;border-radius:20px;font-size:12px;font-weight:700;text-decoration:none">اعلن هنا</a><style>@keyframes scroll{from{transform:translateX(0)}to{transform:translateX(-50%)}}</style>`;
+})();
+</script>
 
+<div class="cursor" id="cursor"></div>
 <div class="cursor" id="cursor"></div>
 <div class="cursor-ring" id="cursorRing"></div>
 
