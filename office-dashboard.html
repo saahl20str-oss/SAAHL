@@ -602,9 +602,9 @@ select.pinp{background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3
       <!-- TAB 1 -->
       <div id="tab-basic">
         <div class="panel-row pr2">
-          <div class="pfield"><label><span class="r">*</span> الاسم الكامل</label><input class="pinp" placeholder="اسم العاملة"></div>
+          <div class="pfield"><label><span class="r">*</span> الاسم الكامل</label><input class="pinp" id="m-name" placeholder="اسم العاملة"></div>
           <div class="pfield"><label><span class="r">*</span> الجنسية</label>
-            <select class="pinp">
+            <select class="pinp" id="m-nationality">
               <option value="">اختر</option>
               <option>فلبينية</option><option>إندونيسية</option><option>إثيوبية</option>
               <option>سريلانكية</option><option>سودانية</option><option>غانية</option>
@@ -613,42 +613,42 @@ select.pinp{background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3
           </div>
         </div>
         <div class="panel-row pr3">
-          <div class="pfield"><label><span class="r">*</span> العمر</label><input class="pinp" type="number" placeholder="25"></div>
+          <div class="pfield"><label><span class="r">*</span> العمر</label><input class="pinp" id="m-age" type="number" placeholder="25"></div>
           <div class="pfield"><label>الديانة</label>
-            <select class="pinp"><option value="">اختر</option><option>مسلمة</option><option>مسيحية</option><option>أخرى</option></select>
+            <select class="pinp" id="m-religion"><option value="">اختر</option><option>مسلمة</option><option>مسيحية</option><option>أخرى</option></select>
           </div>
           <div class="pfield"><label><span class="r">*</span> المستوى</label>
-            <select class="pinp"><option value="">اختر</option><option>مبتدئة</option><option>متوسطة</option><option>متقدمة</option><option>خبيرة</option></select>
+            <select class="pinp" id="m-level"><option value="">اختر</option><option>مبتدئة</option><option>متوسطة</option><option>متقدمة</option><option>خبيرة</option></select>
           </div>
         </div>
         <div class="panel-row pr2">
           <div class="pfield"><label><span class="r">*</span> نوع العاملة</label>
-            <select class="pinp"><option value="">اختر</option><option>داخل الدولة</option><option>استقدام من الخارج</option></select>
+            <select class="pinp" id="m-type"><option value="">اختر</option><option>داخل الدولة</option><option>استقدام من الخارج</option></select>
           </div>
-          <div class="pfield"><label>رقم مرجعي</label><input class="pinp" placeholder="اختياري"></div>
+          <div class="pfield"><label>رقم مرجعي</label><input class="pinp" id="m-refnum" placeholder="اختياري"></div>
         </div>
         <div class="panel-row pr1">
-          <div class="pfield"><label>المهارات</label><input class="pinp" placeholder="مثال: طبخ، تنظيف، رعاية أطفال، رعاية مسنين"></div>
+          <div class="pfield"><label>المهارات</label><input class="pinp" id="m-skills" placeholder="مثال: طبخ، تنظيف، رعاية أطفال، رعاية مسنين"></div>
         </div>
       </div>
 
       <!-- TAB 2 -->
       <div id="tab-financial" style="display:none">
         <div class="panel-row pr2">
-          <div class="pfield"><label><span class="r">*</span> الراتب الشهري (د.إ)</label><input class="pinp" type="number" placeholder="1200"></div>
-          <div class="pfield"><label><span class="r">*</span> رسوم الاستقدام (د.إ)</label><input class="pinp" type="number" placeholder="3000"></div>
+          <div class="pfield"><label><span class="r">*</span> الراتب الشهري (د.إ)</label><input class="pinp" id="m-salary" type="number" placeholder="1200"></div>
+          <div class="pfield"><label><span class="r">*</span> رسوم الاستقدام (د.إ)</label><input class="pinp" id="m-office-fee" type="number" placeholder="3000"></div>
         </div>
         <div class="panel-row pr2">
-          <div class="pfield"><label>رسوم التجربة / يوم (د.إ)</label><input class="pinp" type="number" value="50"></div>
-          <div class="pfield"><label>فترة التجربة (أيام)</label><input class="pinp" type="number" value="5"></div>
+          <div class="pfield"><label>رسوم التجربة / يوم (د.إ)</label><input class="pinp" id="m-trial-fee" type="number" value="50"></div>
+          <div class="pfield"><label>فترة التجربة (أيام)</label><input class="pinp" id="m-trial-days" type="number" value="5"></div>
         </div>
         <div class="panel-row pr2">
-          <div class="pfield"><label>توصيل — نفس المنطقة (د.إ)</label><input class="pinp" type="number" value="100"></div>
-          <div class="pfield"><label>توصيل — خارج المنطقة (د.إ)</label><input class="pinp" type="number" value="250"></div>
+          <div class="pfield"><label>توصيل — نفس المنطقة (د.إ)</label><input class="pinp" id="m-delivery-same" type="number" value="100"></div>
+          <div class="pfield"><label>توصيل — خارج المنطقة (د.إ)</label><input class="pinp" id="m-delivery-diff" type="number" value="250"></div>
         </div>
         <div class="panel-row pr2">
-          <div class="pfield"><label>سعر التأشيرة (للخارجيات)</label><input class="pinp" type="number" placeholder="اتركه فارغاً للمحليات"></div>
-          <div class="pfield"><label>أيام الوصول المتوقعة</label><input class="pinp" type="number" placeholder="للخارجيات فقط"></div>
+          <div class="pfield"><label>سعر التأشيرة (للخارجيات)</label><input class="pinp" id="m-visa-price" type="number" placeholder="اتركه فارغاً للمحليات"></div>
+          <div class="pfield"><label>أيام الوصول المتوقعة</label><input class="pinp" id="m-arrival-days" type="number" placeholder="للخارجيات فقط"></div>
         </div>
       </div>
 
@@ -1208,19 +1208,73 @@ async function updateBookingStatus(bookingId, newStatus) {
 // حفظ عاملة جديدة
 async function saveMaid() {
   if (!_user) return;
-  const name = document.querySelector('#tab-basic .pinp[placeholder="اسم العاملة"]').value.trim();
-  const nat = document.querySelector('#tab-basic select.pinp').value;
-  const age = document.querySelectorAll('#tab-basic .pinp[type="number"]')[0].value;
-  const level = document.querySelectorAll('#tab-basic select.pinp')[2].value;
-  const maidType = document.querySelectorAll('#tab-basic select.pinp')[1].value;
-  const salary = document.querySelector('#tab-financial .pinp[placeholder="1200"]')?.value;
+  const val = (id) => document.getElementById(id)?.value?.trim() || '';
 
-  if (!name) { alert('يرجى إدخال اسم العاملة'); return; }
+  const name = val('m-name');
+  const nat = val('m-nationality');
+  const age = val('m-age');
+  const religion = val('m-religion');
+  const level = val('m-level');
+  const maidType = val('m-type');
+  const refNum = val('m-refnum');
+  const skills = val('m-skills');
+  const salary = val('m-salary');
+  const officeFee = val('m-office-fee');
+  const trialFee = val('m-trial-fee');
+  const trialDays = val('m-trial-days');
+  const deliverySame = val('m-delivery-same');
+  const deliveryDiff = val('m-delivery-diff');
+  const visaPrice = val('m-visa-price');
+  const arrivalDays = val('m-arrival-days');
+
+  // تحقق من الحقول الإلزامية بكل تبويب مع توجيه المستخدم للتبويب الناقص
+  const requiredBasic = [
+    ['m-name', name, 'الاسم الكامل'],
+    ['m-nationality', nat, 'الجنسية'],
+    ['m-age', age, 'العمر'],
+    ['m-level', level, 'المستوى'],
+    ['m-type', maidType, 'نوع العاملة'],
+  ];
+  const requiredFinancial = [
+    ['m-salary', salary, 'الراتب الشهري'],
+    ['m-office-fee', officeFee, 'رسوم الاستقدام'],
+  ];
+
+  for (const [id, v, label] of requiredBasic) {
+    if (!v) {
+      document.querySelector('.panel-tab[onclick*="tab-basic"]').click();
+      document.getElementById(id).focus();
+      alert(`الحقل "${label}" إلزامي — من تبويب "بيانات أساسية"`);
+      return;
+    }
+  }
+  for (const [id, v, label] of requiredFinancial) {
+    if (!v) {
+      document.querySelector('.panel-tab[onclick*="tab-financial"]').click();
+      document.getElementById(id).focus();
+      alert(`الحقل "${label}" إلزامي — من تبويب "المالية والتوصيل"`);
+      return;
+    }
+  }
 
   const { error } = await _db.from('maids').insert({
     office_id: _user.id,
-    full_name: name, nationality: nat, age: parseInt(age) || null,
-    experience_level: level, maid_type: maidType, monthly_salary: parseInt(salary) || null,
+    full_name: name,
+    nationality: nat,
+    age: parseInt(age),
+    religion: religion || null,
+    experience_level: level,
+    maid_type: maidType,
+    reference_number: refNum || null,
+    skills: skills ? skills.split(/[,،]/).map(s => s.trim()).filter(Boolean) : null,
+    monthly_salary: parseInt(salary),
+    office_fee: parseInt(officeFee),
+    trial_period_fee: trialFee ? parseInt(trialFee) : null,
+    trial_period_days: trialDays ? parseInt(trialDays) : null,
+    delivery_fee_same_area: deliverySame ? parseInt(deliverySame) : null,
+    delivery_fee_different_area: deliveryDiff ? parseInt(deliveryDiff) : null,
+    visa_price: visaPrice ? parseInt(visaPrice) : null,
+    expected_arrival_days: arrivalDays ? parseInt(arrivalDays) : null,
     status: 'available'
   });
 
