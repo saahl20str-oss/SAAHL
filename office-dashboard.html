@@ -877,16 +877,16 @@ async function loadMaids() {
     <tr>
       <td>
         <div class="maid-info">
-          <div class="maid-avatar">${m.name ? m.name[0] : 'ع'}</div>
+          <div class="maid-avatar">${m.full_name ? m.full_name[0] : 'ع'}</div>
           <div>
-            <div class="maid-name">${m.name || '—'}</div>
+            <div class="maid-name">${m.full_name || '—'}</div>
             <div class="maid-nat">${m.nationality || ''} — ${m.age || ''} سنة</div>
           </div>
         </div>
       </td>
       <td>${m.nationality || '—'}</td>
-      <td>${m.salary ? m.salary.toLocaleString() + ' د.إ' : '—'}</td>
-      <td>${m.level || '—'}</td>
+      <td>${m.monthly_salary ? m.monthly_salary.toLocaleString() + ' د.إ' : '—'}</td>
+      <td>${m.experience_level || '—'}</td>
       <td>
         <span class="badge ${m.status === 'available' ? 'available' : m.status === 'booked' ? 'booked' : 'contracted'}">
           <span class="badge-dot"></span>
@@ -908,7 +908,7 @@ async function loadBookings() {
   if (!_user) return;
   const { data: bookings, error } = await _db
     .from('bookings')
-    .select(`*, maids(name, nationality), sponsor_profiles(full_name, phone)`)
+    .select(`*, maids(full_name, nationality), sponsor_profiles(full_name)`)
     .eq('office_id', _user.id)
     .order('created_at', { ascending: false });
 
@@ -951,7 +951,7 @@ async function loadBookings() {
       revTbody.innerHTML = completed.slice(0, 20).map(b => `
         <tr>
           <td>${b.sponsor_profiles?.full_name || '—'}</td>
-          <td>${b.maids?.name || '—'}</td>
+          <td>${b.maids?.full_name || '—'}</td>
           <td>${b.booking_type || '—'}</td>
           <td class="quick-val gold">${(Number(b.total_amount) || 0).toLocaleString()} د.إ</td>
           <td>${new Date(b.updated_at || b.created_at).toLocaleDateString('ar-AE')}</td>
@@ -971,7 +971,7 @@ async function loadBookings() {
           <div class="booking-num">${i + 1}</div>
           <div class="booking-info">
             <div class="booking-name">${b.sponsor_profiles?.full_name || 'كفيل'}</div>
-            <div class="booking-detail">${b.maids?.name || '—'} — ${b.maids?.nationality || ''} — ${bookingStatusLabel(b.status)}</div>
+            <div class="booking-detail">${b.maids?.full_name || '—'} — ${b.maids?.nationality || ''} — ${bookingStatusLabel(b.status)}</div>
           </div>
           <div class="booking-right">
             <div class="booking-time">${timeAgo(b.created_at)}</div>
@@ -994,8 +994,8 @@ async function loadBookings() {
         <div class="booking-item">
           <div class="booking-num">${i + 1}</div>
           <div class="booking-info">
-            <div class="booking-name">${b.sponsor_profiles?.full_name || 'كفيل'} — ${b.sponsor_profiles?.phone || ''}</div>
-            <div class="booking-detail">${b.maids?.name || '—'} (${b.maids?.nationality || ''}) — ${bookingStatusLabel(b.status)} — ${timeAgo(b.created_at)}</div>
+            <div class="booking-name">${b.sponsor_profiles?.full_name || 'كفيل'}</div>
+            <div class="booking-detail">${b.maids?.full_name || '—'} (${b.maids?.nationality || ''}) — ${bookingStatusLabel(b.status)} — ${timeAgo(b.created_at)}</div>
           </div>
           <div class="booking-right">
             <div style="display:flex;gap:6px;margin-top:4px">
@@ -1048,8 +1048,8 @@ async function saveMaid() {
 
   const { error } = await _db.from('maids').insert({
     office_id: _user.id,
-    name, nationality: nat, age: parseInt(age) || null,
-    level, type: maidType, salary: parseInt(salary) || null,
+    full_name: name, nationality: nat, age: parseInt(age) || null,
+    experience_level: level, maid_type: maidType, monthly_salary: parseInt(salary) || null,
     status: 'available'
   });
 
