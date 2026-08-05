@@ -259,7 +259,7 @@ select.pinp{background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3
     <a class="nav-item" onclick="showPage('messages')">
       <div class="nav-icon">💬</div>
       <span class="nav-label">الرسائل</span>
-      <span class="nav-badge">2</span>
+      <span class="nav-badge" style="opacity:.4">0</span>
     </a>
 
     <div class="sb-section">الإدارة</div>
@@ -356,7 +356,7 @@ select.pinp{background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3
       <!-- TRIAL BANNER -->
       <div class="sub-banner">
         <div class="sub-banner-left">
-          <div class="sub-banner-title">7 أيام متبقية من فترة التجربة</div>
+          <div class="sub-banner-title" id="sub-banner-title">أيام التجربة المجانية</div>
           <div class="sub-banner-sub">فعّل اشتراكك الآن بـ 70 درهم/شهر واستمر في استقبال الطلبات</div>
         </div>
         <button class="sub-banner-btn">تفعيل الاشتراك</button>
@@ -445,7 +445,7 @@ select.pinp{background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3
     <div id="page-maids" style="display:none">
       <div class="wcard">
         <div class="wcard-head">
-          <span class="wcard-title">قائمة العاملات (7 / 7)</span>
+          <span class="wcard-title" id="maids-page-title">قائمة العاملات (0 / 0)</span>
           <button class="wcard-action" onclick="openPanel()">+ إضافة عاملة</button>
         </div>
         <div style="overflow-x:auto">
@@ -460,63 +460,8 @@ select.pinp{background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3
                 <th>إجراءات</th>
               </tr>
             </thead>
-            <tbody>
-              <tr>
-                <td><div class="maid-info"><div class="maid-avatar">ف</div><div><div class="maid-name">فاطمة أحمد</div><div class="maid-nat">فلبينية — 28 سنة</div></div></div></td>
-                <td>فلبين</td>
-                <td>1,200 د.إ</td>
-                <td>متقدمة</td>
-                <td><span class="badge booked"><span class="badge-dot"></span>محجوزة</span></td>
-                <td><div style="display:flex;gap:6px"><button class="tbl-btn edit">تعديل</button><button class="tbl-btn del">حذف</button></div></td>
-              </tr>
-              <tr>
-                <td><div class="maid-info"><div class="maid-avatar">س</div><div><div class="maid-name">سيتي رحمة</div><div class="maid-nat">إندونيسية — 24 سنة</div></div></div></td>
-                <td>إندونيسيا</td>
-                <td>1,100 د.إ</td>
-                <td>متوسطة</td>
-                <td><span class="badge contracted"><span class="badge-dot"></span>في التجربة</span></td>
-                <td><div style="display:flex;gap:6px"><button class="tbl-btn edit">تعديل</button><button class="tbl-btn del">حذف</button></div></td>
-              </tr>
-              <tr>
-                <td><div class="maid-info"><div class="maid-avatar">م</div><div><div class="maid-name">مريم جوزيف</div><div class="maid-nat">إثيوبية — 30 سنة</div></div></div></td>
-                <td>إثيوبيا</td>
-                <td>900 د.إ</td>
-                <td>مبتدئة</td>
-                <td><span class="badge available"><span class="badge-dot"></span>متاحة</span></td>
-                <td><div style="display:flex;gap:6px"><button class="tbl-btn edit">تعديل</button><button class="tbl-btn del">حذف</button></div></td>
-              </tr>
-              <tr>
-                <td><div class="maid-info"><div class="maid-avatar">ن</div><div><div class="maid-name">نور حسين</div><div class="maid-nat">سريلانكية — 26 سنة</div></div></div></td>
-                <td>سريلانكا</td>
-                <td>1,050 د.إ</td>
-                <td>متقدمة</td>
-                <td><span class="badge available"><span class="badge-dot"></span>متاحة</span></td>
-                <td><div style="display:flex;gap:6px"><button class="tbl-btn edit">تعديل</button><button class="tbl-btn del">حذف</button></div></td>
-              </tr>
-              <tr>
-                <td><div class="maid-info"><div class="maid-avatar">ر</div><div><div class="maid-name">رحمة علي</div><div class="maid-nat">سودانية — 32 سنة</div></div></div></td>
-                <td>السودان</td>
-                <td>850 د.إ</td>
-                <td>متوسطة</td>
-                <td><span class="badge available"><span class="badge-dot"></span>متاحة</span></td>
-                <td><div style="display:flex;gap:6px"><button class="tbl-btn edit">تعديل</button><button class="tbl-btn del">حذف</button></div></td>
-              </tr>
-              <tr>
-                <td><div class="maid-info"><div class="maid-avatar">أ</div><div><div class="maid-name">آنا ماريا</div><div class="maid-nat">فلبينية — 27 سنة</div></div></div></td>
-                <td>فلبين</td>
-                <td>1,300 د.إ</td>
-                <td>خبيرة</td>
-                <td><span class="badge available"><span class="badge-dot"></span>متاحة</span></td>
-                <td><div style="display:flex;gap:6px"><button class="tbl-btn edit">تعديل</button><button class="tbl-btn del">حذف</button></div></td>
-              </tr>
-              <tr>
-                <td><div class="maid-info"><div class="maid-avatar">ه</div><div><div class="maid-name">هيلينا تيفيري</div><div class="maid-nat">إثيوبية — 25 سنة</div></div></div></td>
-                <td>إثيوبيا</td>
-                <td>800 د.إ</td>
-                <td>مبتدئة</td>
-                <td><span class="badge available"><span class="badge-dot"></span>متاحة</span></td>
-                <td><div style="display:flex;gap:6px"><button class="tbl-btn edit">تعديل</button><button class="tbl-btn del">حذف</button></div></td>
-              </tr>
+            <tbody id="maids-table-body">
+              <tr><td colspan="6">لا توجد عاملات مضافة بعد</td></tr>
             </tbody>
           </table>
         </div>
@@ -596,19 +541,62 @@ select.pinp{background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3
       <div class="wcard">
         <div class="wcard-head"><span class="wcard-title">إعدادات المكتب</span></div>
         <div class="panel-body" style="padding:24px">
+
           <div class="panel-row pr2">
-            <div class="pfield"><label>اسم المكتب</label><input class="pinp" value="مكتب الأمانة للاستقدام"></div>
-            <div class="pfield"><label>رقم الترخيص</label><input class="pinp" value="UAE-2024-12345" readonly style="background:#f9f9f9;color:#999"></div>
+            <div class="pfield"><label>شعار المكتب (رابط صورة)</label><input class="pinp" id="set-logo" placeholder="https://.../logo.png"></div>
+            <div class="pfield"><label>رقم الترخيص</label><input class="pinp" id="set-license" readonly style="background:#f9f9f9;color:#999"></div>
           </div>
+          <div id="logo-preview" style="margin:4px 0 12px"></div>
+
           <div class="panel-row pr2">
-            <div class="pfield"><label>رقم الجوال</label><input class="pinp" value="+971 50 123 4567"></div>
-            <div class="pfield"><label>رقم واتساب</label><input class="pinp" value="+971 50 123 4567"></div>
+            <div class="pfield"><label>اسم المكتب</label><input class="pinp" id="set-office-name"></div>
+            <div class="pfield"><label>الإمارة</label>
+              <select class="pinp" id="set-emirate">
+                <option value="">اختر الإمارة</option>
+                <option>أبوظبي</option><option>دبي</option><option>الشارقة</option>
+                <option>عجمان</option><option>أم القيوين</option><option>رأس الخيمة</option><option>الفجيرة</option>
+              </select>
+            </div>
           </div>
+
+          <div class="panel-row pr2">
+            <div class="pfield"><label>المنطقة</label><input class="pinp" id="set-area"></div>
+            <div class="pfield"><label>الشارع</label><input class="pinp" id="set-street"></div>
+          </div>
+
+          <div class="panel-row pr2">
+            <div class="pfield"><label>رقم الهاتف الأرضي</label><input class="pinp" id="set-landline" placeholder="+971 4 XXX XXXX"></div>
+            <div class="pfield"><label>رقم الجوال</label><input class="pinp" id="set-mobile" placeholder="+971 50 XXX XXXX"></div>
+          </div>
+
           <div class="panel-row pr1">
-            <div class="pfield"><label>رابط جوجل ماب</label><input class="pinp" placeholder="https://maps.google.com/..."></div>
+            <div class="pfield"><label>رقم واتساب</label><input class="pinp" id="set-whatsapp" placeholder="+971 50 XXX XXXX"></div>
           </div>
+
+          <div class="panel-row pr1">
+            <div class="pfield"><label>رابط جوجل ماب</label><input class="pinp" id="set-maplink" placeholder="https://maps.google.com/..."></div>
+          </div>
+
+          <div class="panel-row pr1">
+            <div class="pfield"><label>مميزات المكتب (خدمات، مزايا)</label><textarea class="pinp" id="set-features" rows="3" placeholder="مثال: تسليم خلال 48 ساعة، ضمان استبدال 3 أشهر..."></textarea></div>
+          </div>
+
+          <div class="panel-row pr1">
+            <div class="pfield"><label>لماذا تختارنا (نبذة تظهر للكفلاء)</label><textarea class="pinp" id="set-whyus" rows="3"></textarea></div>
+          </div>
+
+          <div class="panel-row pr1">
+            <div class="pfield"><label>سياسة الاستبدال</label><textarea class="pinp" id="set-return-policy" rows="2"></textarea></div>
+          </div>
+
+          <div class="panel-row pr2">
+            <div class="pfield"><label>اسم البنك</label><input class="pinp" id="set-bank-name"></div>
+            <div class="pfield"><label>رقم الحساب / IBAN</label><input class="pinp" id="set-bank-account"></div>
+          </div>
+
+          <div id="settings-save-msg" style="font-size:13px;margin-top:8px"></div>
           <div class="panel-foot" style="border:none;padding:16px 0 0">
-            <button class="pbtn-save">حفظ التغييرات</button>
+            <button class="pbtn-save" onclick="saveOfficeSettings()">حفظ التغييرات</button>
           </div>
         </div>
       </div>
@@ -817,7 +805,10 @@ async function initDashboard() {
         const days = Math.max(0, Math.ceil((new Date(office.trial_end_date) - new Date()) / 86400000));
         document.querySelector('.trial-days').textContent = days;
         document.querySelector('.trial-fill').style.width = Math.min(100, (days/10)*100) + '%';
+        const bannerTitle = document.getElementById('sub-banner-title');
+        if (bannerTitle) bannerTitle.textContent = `${days} أيام متبقية من فترة التجربة`;
       }
+      fillSettingsForm(office);
     }
 
     // جلب العاملات
@@ -830,6 +821,71 @@ async function initDashboard() {
   }
 }
 
+// تعبئة نموذج الإعدادات ببيانات المكتب الحقيقية
+function fillSettingsForm(office) {
+  const set = (id, val) => { const el = document.getElementById(id); if (el) el.value = val || ''; };
+  set('set-logo', office.logo);
+  set('set-license', office.license_number);
+  set('set-office-name', office.office_name);
+  set('set-emirate', office.emirate);
+  set('set-area', office.area);
+  set('set-street', office.street);
+  set('set-landline', office.landline);
+  set('set-mobile', office.mobile);
+  set('set-whatsapp', office.whatsapp);
+  set('set-maplink', office.google_map_link);
+  set('set-features', office.office_features);
+  set('set-whyus', office.why_us);
+  set('set-return-policy', office.return_policy);
+  set('set-bank-name', office.bank_name);
+  set('set-bank-account', office.bank_account);
+  renderLogoPreview(office.logo);
+}
+
+function renderLogoPreview(url) {
+  const box = document.getElementById('logo-preview');
+  if (!box) return;
+  box.innerHTML = url
+    ? `<img src="${url}" alt="شعار المكتب" style="height:56px;border-radius:8px;border:1px solid var(--border)" onerror="this.style.display='none'">`
+    : '';
+}
+
+// حفظ إعدادات المكتب الحقيقية بقاعدة البيانات
+async function saveOfficeSettings() {
+  if (!_user) return;
+  const val = (id) => document.getElementById(id)?.value?.trim() || null;
+  const msgEl = document.getElementById('settings-save-msg');
+
+  const updates = {
+    logo: val('set-logo'),
+    office_name: val('set-office-name'),
+    emirate: val('set-emirate'),
+    area: val('set-area'),
+    street: val('set-street'),
+    landline: val('set-landline'),
+    mobile: val('set-mobile'),
+    whatsapp: val('set-whatsapp'),
+    google_map_link: val('set-maplink'),
+    office_features: val('set-features'),
+    why_us: val('set-whyus'),
+    return_policy: val('set-return-policy'),
+    bank_name: val('set-bank-name'),
+    bank_account: val('set-bank-account'),
+  };
+
+  const { error } = await _db.from('office_profiles').update(updates).eq('id', _user.id);
+  if (error) {
+    if (msgEl) { msgEl.style.color = '#E53E3E'; msgEl.textContent = 'خطأ: ' + error.message; }
+    return;
+  }
+  _officeProfile = { ..._officeProfile, ...updates };
+  document.querySelector('.sb-office-name').textContent = updates.office_name || 'مكتبي';
+  renderLogoPreview(updates.logo);
+  if (msgEl) { msgEl.style.color = '#38A169'; msgEl.textContent = 'تم حفظ الإعدادات بنجاح'; }
+  setTimeout(() => { if (msgEl) msgEl.textContent = ''; }, 3000);
+}
+
+
 // جلب العاملات من Supabase
 async function loadMaids() {
   if (!_user) return;
@@ -840,13 +896,16 @@ async function loadMaids() {
     .order('created_at', { ascending: false });
   
   if (error) { console.error('maids:', error); return; }
-  if (!maids) return;
+  if (!maids) maids = [];
 
   // تحديث العدادات
   document.getElementById('maids-count').textContent = maids.length;
   const available = maids.filter(m => m.status === 'available').length;
   const booked = maids.filter(m => m.status === 'booked').length;
   const trial = maids.filter(m => m.status === 'trial' || m.status === 'contracted').length;
+
+  const pageTitle = document.getElementById('maids-page-title');
+  if (pageTitle) pageTitle.textContent = `قائمة العاملات (${maids.length} / ${maids.length})`;
 
   // تحديث stat card "عاملات متاحة" فقط (النشطة/المكتملة تُحدَّث من loadBookings)
   document.querySelectorAll('.stat-num')[0].textContent = available;
@@ -870,8 +929,12 @@ async function loadMaids() {
   }
 
   // تحديث جدول العاملات
-  const tbody = document.querySelector('.maids-table tbody');
-  if (!tbody || !maids.length) return;
+  const tbody = document.getElementById('maids-table-body');
+  if (!tbody) return;
+  if (!maids.length) {
+    tbody.innerHTML = '<tr><td colspan="6">لا توجد عاملات مضافة بعد</td></tr>';
+    return;
+  }
 
   tbody.innerHTML = maids.map(m => `
     <tr>
