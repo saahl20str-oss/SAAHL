@@ -404,7 +404,7 @@ select.pinp{background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3
               <span class="quick-val" id="qs-booked">0</span>
             </div>
             <div class="quick-item">
-              <span class="quick-lbl">في التجربة</span>
+              <span class="quick-lbl">متعاقد عليها</span>
               <span class="quick-val" id="qs-trial">0</span>
             </div>
             <div class="quick-item">
@@ -623,7 +623,7 @@ select.pinp{background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3
         </div>
         <div class="panel-row pr2">
           <div class="pfield"><label><span class="r">*</span> نوع العاملة</label>
-            <select class="pinp" id="m-type"><option value="">اختر</option><option>داخل الدولة</option><option>استقدام من الخارج</option></select>
+            <select class="pinp" id="m-type"><option value="">اختر</option><option value="LOCAL">داخل الدولة</option><option value="ABROAD">استقدام من الخارج</option></select>
           </div>
           <div class="pfield"><label>رقم مرجعي</label><input class="pinp" id="m-refnum" placeholder="اختياري"></div>
         </div>
@@ -775,7 +775,7 @@ async function openFeaturePanel() {
     .from('maids')
     .select('id, full_name, nationality')
     .eq('office_id', _user.id)
-    .eq('status', 'available');
+    .eq('status', 'AVAILABLE');
   if (error) { console.error('feature maids:', error); sel.innerHTML = '<option value="">تعذر التحميل</option>'; return; }
   if (!maids || !maids.length) {
     sel.innerHTML = '<option value="">لا توجد عاملات متاحة للتمييز</option>';
@@ -1008,9 +1008,9 @@ async function loadMaids() {
 
   // تحديث العدادات
   document.getElementById('maids-count').textContent = maids.length;
-  const available = maids.filter(m => m.status === 'available').length;
-  const booked = maids.filter(m => m.status === 'booked').length;
-  const trial = maids.filter(m => m.status === 'trial' || m.status === 'contracted').length;
+  const available = maids.filter(m => m.status === 'AVAILABLE').length;
+  const booked = maids.filter(m => m.status === 'BOOKED').length;
+  const trial = maids.filter(m => m.status === 'CONTRACTED').length;
 
   const pageTitle = document.getElementById('maids-page-title');
   if (pageTitle) pageTitle.textContent = `قائمة العاملات (${maids.length} / ${maids.length})`;
@@ -1059,9 +1059,9 @@ async function loadMaids() {
       <td>${m.monthly_salary ? m.monthly_salary.toLocaleString() + ' د.إ' : '—'}</td>
       <td>${m.experience_level || '—'}</td>
       <td>
-        <span class="badge ${m.status === 'available' ? 'available' : m.status === 'booked' ? 'booked' : 'contracted'}">
+        <span class="badge ${maidStatusBadgeClass(m.status)}">
           <span class="badge-dot"></span>
-          ${m.status === 'available' ? 'متاحة' : m.status === 'booked' ? 'محجوزة' : 'في التجربة'}
+          ${maidStatusLabel(m.status)}
         </span>
       </td>
       <td>
@@ -1180,6 +1180,14 @@ async function loadBookings() {
   }
 }
 
+function maidStatusLabel(status) {
+  const map = { AVAILABLE: 'متاحة', BOOKED: 'محجوزة', CONTRACTED: 'متعاقد عليها', RETURNED: 'معادة' };
+  return map[status] || status || '—';
+}
+function maidStatusBadgeClass(status) {
+  const map = { AVAILABLE: 'available', BOOKED: 'booked', CONTRACTED: 'contracted', RETURNED: 'contracted' };
+  return map[status] || 'booked';
+}
 function bookingStatusLabel(status) {
   const map = { pending: 'حجز مبدئي', confirmed: 'مؤكد', trial: 'فترة تجربة', completed: 'مكتمل', cancelled: 'ملغي' };
   return map[status] || status || '—';
@@ -1275,7 +1283,7 @@ async function saveMaid() {
     delivery_fee_different_area: deliveryDiff ? parseInt(deliveryDiff) : null,
     visa_price: visaPrice ? parseInt(visaPrice) : null,
     expected_arrival_days: arrivalDays ? parseInt(arrivalDays) : null,
-    status: 'available'
+    status: 'AVAILABLE'
   });
 
   if (error) { alert('خطأ في الحفظ: ' + error.message); return; }
