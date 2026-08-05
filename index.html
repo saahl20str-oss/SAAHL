@@ -664,15 +664,130 @@ footer{
 <body>
 <div id="ad-strip"></div>
 <script>
-(async()=>{
-  const r=await fetch('https://ytjrtflmqydnpepdyafa.supabase.co/rest/v1/strip_ads?status=eq.active&select=ad_topic,advertiser_name,phone',{headers:{'apikey':'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Inl0anJ0ZmxtcXlkbnBlcGR5YWZhIiwicm9sZSI6ImFub24iLCJpYXQiOjE3Nzk1Mzk1MjksImV4cCI6MjA5NTExNTUyOX0.8ObScEKDLhsBjmfgkBqFdadx5xA99pw0CkRWCzxASpw'}});
-  const ads=await r.json();
-  if(!ads.length)return;
-  const s=document.getElementById('ad-strip');
-  s.style.cssText='background:#C9A84C;color:#fff;padding:8px 0;overflow:hidden;white-space:nowrap;font-family:Tajawal,sans-serif;font-size:14px;position:relative;z-index:999';
-  const text=ads.map(a=>`📢 ${a.ad_topic} — ${a.advertiser_name} ${a.phone?'| '+a.phone:''}`).join('   ✦   ');
-  s.innerHTML=`<div style="display:inline-block;animation:scroll 20s linear infinite">　${text}　${text}</div><a href="advertise.html" style="position:absolute;left:12px;top:50%;transform:translateY(-50%);background:#fff;color:#C9A84C;padding:3px 10px;border-radius:20px;font-size:12px;font-weight:700;text-decoration:none">اعلن هنا</a><style>@keyframes scroll{from{transform:translateX(0)}to{transform:translateX(-50%)}}</style>`;
-})();
+const STRIP_SUPABASE_URL = 'https://ytjrtflmqydnpepdyafa.supabase.co';
+const STRIP_ANON_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Inl0anJ0ZmxtcXlkbnBlcGR5YWZhIiwicm9sZSI6ImFub24iLCJpYXQiOjE3Nzk1Mzk1MjksImV4cCI6MjA5NTExNTUyOX0.8ObScEKDLhsBjmfgkBqFdadx5xA99pw0CkRWCzxASpw';
+
+async function loadAdStrip(){
+  try{
+    // نستخدم expires_at بدل status لأننا غير متأكدين من صيغة قيمة status بالحروف الكبيرة/الصغيرة — التاريخ لا لبس فيه
+    const nowIso = new Date().toISOString();
+    const url = `${STRIP_SUPABASE_URL}/rest/v1/strip_ads?select=ad_topic,advertiser_name,phone&expires_at=gt.${nowIso}&order=created_at.desc&limit=20`;
+    const r = await fetch(url, {headers:{apikey:STRIP_ANON_KEY, Authorization:'Bearer '+STRIP_ANON_KEY}});
+    if(!r.ok) throw new Error('strip fetch failed');
+    const ads = await r.json();
+    const s = document.getElementById('ad-strip');
+    if(!ads || !ads.length){
+      // ماكو إعلانات نشطة حالياً — نعرض الشريط فاضي بس بزر "أعلن هنا" فقط، بدل إخفائه بالكامل
+      s.style.cssText='background:#C9A84C;color:#fff;padding:8px 0;overflow:hidden;white-space:nowrap;font-family:Tajawal,sans-serif;font-size:14px;position:relative;z-index:999';
+      s.innerHTML=`<div style="display:inline-block">　كن أول من يعلن هنا　</div><button onclick="openAdvertiseModal()" style="position:absolute;left:12px;top:50%;transform:translateY(-50%);background:#fff;color:#C9A84C;padding:3px 10px;border-radius:20px;font-size:12px;font-weight:700;border:none;cursor:pointer;font-family:inherit">اعلن هنا</button>`;
+      return;
+    }
+    s.style.cssText='background:#C9A84C;color:#fff;padding:8px 0;overflow:hidden;white-space:nowrap;font-family:Tajawal,sans-serif;font-size:14px;position:relative;z-index:999';
+    const text=ads.map(a=>`📢 ${a.ad_topic} — ${a.advertiser_name} ${a.phone?'| '+a.phone:''}`).join('   ✦   ');
+    s.innerHTML=`<div style="display:inline-block;animation:scroll 20s linear infinite">　${text}　${text}</div><button onclick="openAdvertiseModal()" style="position:absolute;left:12px;top:50%;transform:translateY(-50%);background:#fff;color:#C9A84C;padding:3px 10px;border-radius:20px;font-size:12px;font-weight:700;border:none;cursor:pointer;font-family:inherit">اعلن هنا</button><style>@keyframes scroll{from{transform:translateX(0)}to{transform:translateX(-50%)}}</style>`;
+  }catch(e){
+    console.warn('ad-strip:', e);
+  }
+}
+loadAdStrip();
+
+// ===== نافذة "أعلن هنا" — نشر إعلان بالشريط العلوي (مكتب/فرد/كفالة) =====
+function openAdvertiseModal(){
+  if(document.getElementById('advertiseModalOverlay')) { document.getElementById('advertiseModalOverlay').style.display='flex'; return; }
+  const overlay = document.createElement('div');
+  overlay.id = 'advertiseModalOverlay';
+  overlay.style.cssText = 'position:fixed;inset:0;background:rgba(0,0,0,.5);z-index:2000;display:flex;align-items:flex-start;justify-content:center;padding:40px 16px;overflow-y:auto;font-family:Tajawal,sans-serif';
+  overlay.onclick = (e) => { if(e.target === overlay) overlay.style.display='none'; };
+  overlay.innerHTML = `
+    <div style="background:#fff;border-radius:16px;max-width:440px;width:100%;padding:24px;direction:rtl" onclick="event.stopPropagation()">
+      <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:16px">
+        <h3 style="margin:0;font-size:18px;color:#111">أعلن هنا</h3>
+        <button onclick="document.getElementById('advertiseModalOverlay').style.display='none'" style="background:none;border:none;font-size:20px;cursor:pointer;color:#999">✕</button>
+      </div>
+      <div style="display:flex;flex-direction:column;gap:12px">
+        <div><label style="font-size:12px;color:#777;display:block;margin-bottom:4px">نوع المعلن</label>
+          <select id="adv-type" style="width:100%;padding:10px;border:1.5px solid #E8E8E8;border-radius:9px;font-family:inherit">
+            <option value="مكتب استقدام">مكتب استقدام</option>
+            <option value="فرد">فرد</option>
+            <option value="آخر">آخر</option>
+          </select>
+        </div>
+        <div><label style="font-size:12px;color:#777;display:block;margin-bottom:4px">اسم المعلن</label>
+          <input id="adv-name" style="width:100%;padding:10px;border:1.5px solid #E8E8E8;border-radius:9px;font-family:inherit" placeholder="اسم المكتب أو الاسم الكامل"></div>
+        <div style="display:flex;gap:10px">
+          <div style="flex:1"><label style="font-size:12px;color:#777;display:block;margin-bottom:4px">رقم الهاتف</label>
+            <input id="adv-phone" style="width:100%;padding:10px;border:1.5px solid #E8E8E8;border-radius:9px;font-family:inherit" placeholder="+971..."></div>
+          <div style="flex:1"><label style="font-size:12px;color:#777;display:block;margin-bottom:4px">واتساب</label>
+            <input id="adv-whatsapp" style="width:100%;padding:10px;border:1.5px solid #E8E8E8;border-radius:9px;font-family:inherit" placeholder="اختياري"></div>
+        </div>
+        <div><label style="font-size:12px;color:#777;display:block;margin-bottom:4px">عنوان الإعلان</label>
+          <input id="adv-topic" style="width:100%;padding:10px;border:1.5px solid #E8E8E8;border-radius:9px;font-family:inherit" placeholder="مثال: عاملات فلبينيات متوفرات الآن"></div>
+        <div><label style="font-size:12px;color:#777;display:block;margin-bottom:4px">تفاصيل الإعلان</label>
+          <textarea id="adv-details" rows="3" style="width:100%;padding:10px;border:1.5px solid #E8E8E8;border-radius:9px;font-family:inherit;resize:vertical"></textarea></div>
+        <div><label style="font-size:12px;color:#777;display:block;margin-bottom:4px">مدة العرض (أيام)</label>
+          <input id="adv-days" type="number" min="1" value="7" style="width:100%;padding:10px;border:1.5px solid #E8E8E8;border-radius:9px;font-family:inherit"></div>
+        <div id="adv-msg" style="font-size:13px"></div>
+        <button onclick="submitAdvertise()" style="background:#C9A84C;color:#fff;border:none;padding:12px;border-radius:9px;font-weight:700;font-size:14px;cursor:pointer;font-family:inherit">إرسال الإعلان</button>
+        <div style="font-size:11px;color:#999;text-align:center">سيتم مراجعة الإعلان وتفعيله من إدارة المنصة قبل النشر</div>
+      </div>
+    </div>`;
+  document.body.appendChild(overlay);
+}
+
+async function submitAdvertise(){
+  const val = (id) => document.getElementById(id)?.value?.trim() || '';
+  const type = val('adv-type');
+  const name = val('adv-name');
+  const phone = val('adv-phone');
+  const whatsapp = val('adv-whatsapp');
+  const topic = val('adv-topic');
+  const details = val('adv-details');
+  const days = parseInt(val('adv-days')) || 7;
+  const msgEl = document.getElementById('adv-msg');
+
+  if(!name || !phone || !topic){
+    msgEl.style.color = '#E53E3E';
+    msgEl.textContent = 'يرجى تعبئة الاسم ورقم الهاتف وعنوان الإعلان';
+    return;
+  }
+
+  try{
+    const startsAt = new Date();
+    const expiresAt = new Date(startsAt.getTime() + days * 86400000);
+    const res = await fetch(`${STRIP_SUPABASE_URL}/rest/v1/strip_ads`, {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+        apikey: STRIP_ANON_KEY,
+        Authorization: 'Bearer ' + STRIP_ANON_KEY,
+        Prefer: 'return=minimal'
+      },
+      body: JSON.stringify({
+        advertiser_name: name,
+        advertiser_type: type,
+        phone: phone,
+        whatsapp: whatsapp || null,
+        ad_topic: topic,
+        ad_details: details || null,
+        days: days,
+        starts_at: startsAt.toISOString(),
+        expires_at: expiresAt.toISOString()
+      })
+    });
+    if(!res.ok){
+      const errText = await res.text();
+      msgEl.style.color = '#E53E3E';
+      msgEl.textContent = 'خطأ: ' + errText;
+      return;
+    }
+    msgEl.style.color = '#38A169';
+    msgEl.textContent = 'تم إرسال إعلانك بنجاح — سيتم تفعيله بعد المراجعة';
+    setTimeout(() => { document.getElementById('advertiseModalOverlay').style.display = 'none'; }, 1800);
+  }catch(e){
+    msgEl.style.color = '#E53E3E';
+    msgEl.textContent = 'تعذّر الإرسال، حاول لاحقاً';
+  }
+}
 </script>
 
 
@@ -748,6 +863,9 @@ footer{
 
   <!-- Arrow / Dots -->
   <div id="spotDots" style="border-top:1px solid rgba(255,255,255,.06);padding:8px 14px;display:flex;align-items:center;justify-content:center;gap:6px"></div>
+
+  <!-- زر أعلن هنا — لصاحب مكتب يريد تمييز إحدى عاملاته -->
+  <a href="register-office.html" style="display:block;text-align:center;padding:8px;font-size:10px;font-weight:700;color:#C9A84C;background:rgba(201,168,76,.08);border-top:1px solid rgba(201,168,76,.15);text-decoration:none">مكتبك؟ أعلن عن عاملاتك هنا ←</a>
 </div>
 
 <!-- زر إعادة الفتح — يظهر فقط بعد إغلاق البطاقة، يبقى بمكانه ويُعيد فتحها بأي وقت -->
@@ -778,16 +896,30 @@ let _spotIndex = 0;
 
 async function loadSpotlight(){
   try{
-    // featured_until=gt.now() يضمن عرض الاشتراكات السارية فقط (مو المنتهية)
-    const q = `${SPOTLIGHT_SUPABASE_URL}/rest/v1/featured_maids`
-      + `?select=id,featured_until,maid:maids(id,full_name,nationality,age,salary,skills,office_id)`
-      + `&featured_until=gt.${new Date().toISOString()}`
-      + `&order=featured_until.desc`
+    // end_date=gt.now() يضمن عرض الاشتراكات السارية فقط (مو المنتهية) — الأعمدة الحقيقية بجدول featured_maids
+    const nowIso = new Date().toISOString();
+    const q1 = `${SPOTLIGHT_SUPABASE_URL}/rest/v1/featured_maids`
+      + `?select=id,maid_id,office_id,end_date`
+      + `&end_date=gt.${nowIso}`
+      + `&order=end_date.desc`
       + `&limit=8`;
-    const res = await fetch(q, {headers:{apikey:SPOTLIGHT_ANON_KEY, Authorization:'Bearer '+SPOTLIGHT_ANON_KEY}});
-    if(!res.ok) throw new Error('fetch failed');
-    const rows = await res.json();
-    _spotData = (rows || []).filter(r => r.maid).map(r => r.maid);
+    const res1 = await fetch(q1, {headers:{apikey:SPOTLIGHT_ANON_KEY, Authorization:'Bearer '+SPOTLIGHT_ANON_KEY}});
+    if(!res1.ok) throw new Error('featured_maids fetch failed');
+    const featRows = await res1.json();
+
+    if(!featRows || !featRows.length){ _spotData = []; }
+    else{
+      const ids = [...new Set(featRows.map(r => r.maid_id).filter(Boolean))];
+      const q2 = `${SPOTLIGHT_SUPABASE_URL}/rest/v1/maids`
+        + `?select=id,full_name,nationality,age,monthly_salary,skills,office_id`
+        + `&id=in.(${ids.join(',')})`;
+      const res2 = await fetch(q2, {headers:{apikey:SPOTLIGHT_ANON_KEY, Authorization:'Bearer '+SPOTLIGHT_ANON_KEY}});
+      if(!res2.ok) throw new Error('maids fetch failed');
+      const maidsRows = await res2.json();
+      const maidsById = {};
+      (maidsRows || []).forEach(m => { maidsById[m.id] = m; });
+      _spotData = featRows.map(r => maidsById[r.maid_id]).filter(Boolean);
+    }
   }catch(e){
     console.warn('Spotlight: تعذّر تحميل العاملات المميزات', e);
     _spotData = [];
@@ -830,7 +962,7 @@ function renderSpotSlides(){
         </div>
         <div style="display:flex;flex-wrap:wrap;gap:4px;margin-bottom:10px">${skillsHtml}</div>
         <div style="display:flex;align-items:center;justify-content:space-between">
-          <div style="font-size:15px;font-weight:900;color:#C9A84C">${m.salary ? escapeHtml(m.salary) : ''} <span style="font-size:9px;font-weight:400;color:rgba(255,255,255,.4)">${m.salary ? 'د.إ' : ''}</span></div>
+          <div style="font-size:15px;font-weight:900;color:#C9A84C">${m.monthly_salary ? escapeHtml(m.monthly_salary) : ''} <span style="font-size:9px;font-weight:400;color:rgba(255,255,255,.4)">${m.monthly_salary ? 'د.إ' : ''}</span></div>
           <a href="${link}" style="font-size:10px;font-weight:700;color:#111;background:#C9A84C;padding:5px 12px;border-radius:6px;text-decoration:none">عرض العاملة</a>
         </div>
       </div>`;
