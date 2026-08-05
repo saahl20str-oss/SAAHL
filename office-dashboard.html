@@ -236,7 +236,7 @@ select.pinp{background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3
     </a>
     <div class="sb-office">
       <div class="sb-office-name">مكتب الأمانة للاستقدام</div>
-      <div class="sb-office-tag"><div class="sb-office-dot"></div> نشط — فترة التجربة</div>
+      <div class="sb-office-tag" id="sb-office-tag"><div class="sb-office-dot"></div> <span id="sb-office-tag-text">نشط — فترة التجربة</span></div>
     </div>
   </div>
 
@@ -307,7 +307,7 @@ select.pinp{background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3
       <div style="position:relative">
         <button class="notif-btn" onclick="toggleNotif()">
           <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="#666" stroke-width="2" stroke-linecap="round"><path d="M18 8A6 6 0 0 0 6 8c0 7-3 9-3 9h18s-3-2-3-9"/><path d="M13.73 21a2 2 0 0 1-3.46 0"/></svg>
-          <span class="notif-dot"></span>
+          <span class="notif-dot" id="notif-dot" style="display:none"></span>
         </button>
         <!-- NOTIF PANEL -->
         <div class="notif-panel" id="notifPanel">
@@ -315,28 +315,8 @@ select.pinp{background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3
             <span class="notif-head-title">الإشعارات</span>
             <button class="notif-mark">تحديد الكل كمقروء</button>
           </div>
-          <div class="notif-item unread">
-            <div class="notif-ico">📋</div>
-            <div class="notif-text">
-              <div class="notif-msg">حجز جديد من كفيل — فاطمة أحمد (فلبينية)</div>
-              <div class="notif-time">منذ 5 دقائق</div>
-            </div>
-            <div class="notif-unread-dot"></div>
-          </div>
-          <div class="notif-item unread">
-            <div class="notif-ico">💬</div>
-            <div class="notif-text">
-              <div class="notif-msg">رسالة جديدة من كفيل بخصوص عاملة إندونيسية</div>
-              <div class="notif-time">منذ 23 دقيقة</div>
-            </div>
-            <div class="notif-unread-dot"></div>
-          </div>
-          <div class="notif-item">
-            <div class="notif-ico">✅</div>
-            <div class="notif-text">
-              <div class="notif-msg">تم إتمام حجز سيتي رحمة بنجاح</div>
-              <div class="notif-time">منذ ساعتين</div>
-            </div>
+          <div id="notif-list">
+            <div class="empty-state"><div class="empty-title">لا توجد إشعارات بعد</div></div>
           </div>
         </div>
       </div>
@@ -785,6 +765,13 @@ let _officeProfile = null;
 // تحميل بيانات المكتب عند بدء الصفحة
 async function initDashboard() {
   try {
+    // تاريخ الترحيب الحقيقي (بدل النص الثابت)
+    const pageSub = document.getElementById('pageSub');
+    if (pageSub) {
+      const todayStr = new Date().toLocaleDateString('ar-EG-u-nu-latn', { weekday: 'long', day: 'numeric', month: 'long', year: 'numeric' });
+      pageSub.textContent = `مرحباً بك — ${todayStr}`;
+    }
+
     const { data: { user }, error } = await _db.auth.getUser();
     if (!user) { window.location.href = 'login.html'; return; }
     _user = user;
@@ -809,6 +796,7 @@ async function initDashboard() {
         if (bannerTitle) bannerTitle.textContent = `${days} أيام متبقية من فترة التجربة`;
       }
       fillSettingsForm(office);
+      updateSubscriptionTag(office.subscription_status);
     }
 
     // جلب العاملات
@@ -819,6 +807,23 @@ async function initDashboard() {
   } catch(e) {
     console.error('initDashboard:', e);
   }
+}
+
+// تحديث شارة حالة الاشتراك من البيانات الحقيقية
+function updateSubscriptionTag(status) {
+  const tag = document.getElementById('sb-office-tag');
+  const text = document.getElementById('sb-office-tag-text');
+  if (!tag || !text) return;
+  const map = {
+    TRIAL: { label: 'نشط — فترة التجربة', color: '#4CAF50' },
+    ACTIVE: { label: 'نشط — مشترك', color: '#4CAF50' },
+    EXPIRED: { label: 'منتهي — فعّل الاشتراك', color: '#E53E3E' },
+    CANCELLED: { label: 'ملغي', color: '#999' },
+  };
+  const info = map[status] || { label: 'غير معروف', color: '#999' };
+  text.textContent = info.label;
+  const dot = tag.querySelector('.sb-office-dot');
+  if (dot) dot.style.background = info.color;
 }
 
 // تعبئة نموذج الإعدادات ببيانات المكتب الحقيقية
