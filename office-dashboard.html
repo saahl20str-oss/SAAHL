@@ -367,33 +367,29 @@ select.pinp{background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3
         <div class="stat-card">
           <div class="stat-top">
             <div class="stat-icon gold">👩</div>
-            <span class="stat-trend up">+2 هذا الشهر</span>
           </div>
-          <div class="stat-num">5</div>
+          <div class="stat-num">0</div>
           <div class="stat-lbl">عاملات متاحة</div>
         </div>
         <div class="stat-card">
           <div class="stat-top">
             <div class="stat-icon orange">📋</div>
-            <span class="stat-trend up">+1 اليوم</span>
           </div>
-          <div class="stat-num">3</div>
+          <div class="stat-num">0</div>
           <div class="stat-lbl">حجوزات نشطة</div>
         </div>
         <div class="stat-card">
           <div class="stat-top">
             <div class="stat-icon green">✅</div>
-            <span class="stat-trend up">هذا الشهر</span>
           </div>
-          <div class="stat-num">8</div>
+          <div class="stat-num">0</div>
           <div class="stat-lbl">حجوزات مكتملة</div>
         </div>
         <div class="stat-card">
           <div class="stat-top">
             <div class="stat-icon blue">💰</div>
-            <span class="stat-trend up">+12%</span>
           </div>
-          <div class="stat-num">3,200</div>
+          <div class="stat-num">0</div>
           <div class="stat-lbl">إيرادات الشهر (د.إ)</div>
         </div>
       </div>
@@ -405,38 +401,8 @@ select.pinp{background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3
             <span class="wcard-title">آخر الحجوزات</span>
             <button class="wcard-action" onclick="showPage('bookings')">عرض الكل</button>
           </div>
-          <div class="booking-item">
-            <div class="booking-num">1</div>
-            <div class="booking-info">
-              <div class="booking-name">محمد الشامسي</div>
-              <div class="booking-detail">فاطمة أحمد — فلبينية — حجز مبدئي</div>
-            </div>
-            <div class="booking-right">
-              <div class="booking-time">منذ 5 دقائق</div>
-              <div class="booking-price"><span class="badge booked"><span class="badge-dot"></span>محجوز</span></div>
-            </div>
-          </div>
-          <div class="booking-item">
-            <div class="booking-num">2</div>
-            <div class="booking-info">
-              <div class="booking-name">خالد المنصوري</div>
-              <div class="booking-detail">سيتي رحمة — إندونيسية — فترة تجربة</div>
-            </div>
-            <div class="booking-right">
-              <div class="booking-time">منذ يومين</div>
-              <div class="booking-price"><span class="badge contracted"><span class="badge-dot"></span>تجربة</span></div>
-            </div>
-          </div>
-          <div class="booking-item">
-            <div class="booking-num">3</div>
-            <div class="booking-info">
-              <div class="booking-name">سعيد الكعبي</div>
-              <div class="booking-detail">مريم جوزيف — إثيوبية — مكتمل</div>
-            </div>
-            <div class="booking-right">
-              <div class="booking-time">منذ أسبوع</div>
-              <div class="booking-price"><span class="badge available"><span class="badge-dot"></span>مكتمل</span></div>
-            </div>
+          <div id="recent-bookings-list">
+            <div class="empty-state"><div class="empty-title">لا توجد حجوزات بعد</div></div>
           </div>
         </div>
 
@@ -444,30 +410,30 @@ select.pinp{background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3
           <div class="wcard-head">
             <span class="wcard-title">ملخص سريع</span>
           </div>
-          <div class="quick-list">
+          <div class="quick-list" id="quick-summary-list">
             <div class="quick-item">
               <span class="quick-lbl">إجمالي العاملات</span>
-              <span class="quick-val">7 / 7</span>
+              <span class="quick-val" id="qs-total-maids">0 / 0</span>
             </div>
             <div class="quick-item">
               <span class="quick-lbl">متاحة للحجز</span>
-              <span class="quick-val gold">5</span>
+              <span class="quick-val gold" id="qs-available">0</span>
             </div>
             <div class="quick-item">
               <span class="quick-lbl">محجوزة</span>
-              <span class="quick-val">1</span>
+              <span class="quick-val" id="qs-booked">0</span>
             </div>
             <div class="quick-item">
               <span class="quick-lbl">في التجربة</span>
-              <span class="quick-val">1</span>
+              <span class="quick-val" id="qs-trial">0</span>
             </div>
             <div class="quick-item">
               <span class="quick-lbl">إيرادات هذا الشهر</span>
-              <span class="quick-val gold">3,200 د.إ</span>
+              <span class="quick-val gold" id="qs-revenue">0 د.إ</span>
             </div>
             <div class="quick-item">
               <span class="quick-lbl">تقييم المكتب</span>
-              <span class="quick-val gold">4.8 / 5</span>
+              <span class="quick-val gold" id="qs-rating">— / 5</span>
             </div>
           </div>
         </div>
@@ -562,46 +528,10 @@ select.pinp{background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3
       <div class="wcard">
         <div class="wcard-head">
           <span class="wcard-title">الحجوزات النشطة</span>
-          <span class="badge booked" style="font-size:12px">3 حجوزات</span>
+          <span class="badge booked" style="font-size:12px" id="bookings-page-count">0 حجوزات</span>
         </div>
-        <div class="booking-item">
-          <div class="booking-num">1</div>
-          <div class="booking-info">
-            <div class="booking-name">محمد الشامسي — +971501234567</div>
-            <div class="booking-detail">فاطمة أحمد (فلبينية) — حجز مبدئي — منذ 5 دقائق — ينتهي بعد 2:47</div>
-          </div>
-          <div class="booking-right">
-            <div style="display:flex;gap:6px;margin-top:4px">
-              <button class="tbl-btn edit">قبول</button>
-              <button class="tbl-btn del">إلغاء</button>
-            </div>
-          </div>
-        </div>
-        <div class="booking-item">
-          <div class="booking-num">2</div>
-          <div class="booking-info">
-            <div class="booking-name">خالد المنصوري — +971502345678</div>
-            <div class="booking-detail">سيتي رحمة (إندونيسية) — فترة تجربة — اليوم 3 من 5</div>
-          </div>
-          <div class="booking-right">
-            <div style="display:flex;gap:6px;margin-top:4px">
-              <button class="tbl-btn edit">استكمال</button>
-              <button class="tbl-btn del">إرجاع</button>
-            </div>
-          </div>
-        </div>
-        <div class="booking-item">
-          <div class="booking-num">3</div>
-          <div class="booking-info">
-            <div class="booking-name">أحمد الزعابي — +971503456789</div>
-            <div class="booking-detail">نور حسين (سريلانكية) — حجز مبدئي — منذ ساعة</div>
-          </div>
-          <div class="booking-right">
-            <div style="display:flex;gap:6px;margin-top:4px">
-              <button class="tbl-btn edit">قبول</button>
-              <button class="tbl-btn del">إلغاء</button>
-            </div>
-          </div>
+        <div id="bookings-page-list">
+          <div class="empty-state"><div class="empty-title">لا توجد حجوزات نشطة</div></div>
         </div>
       </div>
     </div>
@@ -623,17 +553,17 @@ select.pinp{background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3
       <div class="stats-row" style="grid-template-columns:repeat(3,1fr)">
         <div class="stat-card">
           <div class="stat-top"><div class="stat-icon green">💰</div></div>
-          <div class="stat-num">3,200</div>
+          <div class="stat-num" id="rev-page-month">0</div>
           <div class="stat-lbl">إيرادات هذا الشهر (د.إ)</div>
         </div>
         <div class="stat-card">
           <div class="stat-top"><div class="stat-icon blue">📊</div></div>
-          <div class="stat-num">8</div>
+          <div class="stat-num" id="rev-page-completed">0</div>
           <div class="stat-lbl">حجوزات مكتملة</div>
         </div>
         <div class="stat-card">
           <div class="stat-top"><div class="stat-icon gold">⭐</div></div>
-          <div class="stat-num">4.8</div>
+          <div class="stat-num" id="rev-page-rating">—</div>
           <div class="stat-lbl">متوسط التقييم</div>
         </div>
       </div>
@@ -641,9 +571,8 @@ select.pinp{background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3
         <div class="wcard-head"><span class="wcard-title">سجل المدفوعات</span></div>
         <table class="maids-table">
           <thead><tr><th>الكفيل</th><th>العاملة</th><th>النوع</th><th>المبلغ</th><th>التاريخ</th></tr></thead>
-          <tbody>
-            <tr><td>خالد المنصوري</td><td>سيتي رحمة</td><td>دفعة تجربة</td><td class="quick-val gold">400 د.إ</td><td>23 مايو 2026</td></tr>
-            <tr><td>سعيد الكعبي</td><td>مريم جوزيف</td><td>دفعة كاملة</td><td class="quick-val gold">2,800 د.إ</td><td>15 مايو 2026</td></tr>
+          <tbody id="rev-page-table-body">
+            <tr><td colspan="5">لا توجد مدفوعات بعد</td></tr>
           </tbody>
         </table>
       </div>
@@ -884,8 +813,8 @@ async function initDashboard() {
     if (office) {
       document.querySelector('.sb-office-name').textContent = office.office_name || 'مكتبي';
       // حساب أيام التجربة المتبقية
-      if (office.trial_ends_at) {
-        const days = Math.max(0, Math.ceil((new Date(office.trial_ends_at) - new Date()) / 86400000));
+      if (office.trial_end_date) {
+        const days = Math.max(0, Math.ceil((new Date(office.trial_end_date) - new Date()) / 86400000));
         document.querySelector('.trial-days').textContent = days;
         document.querySelector('.trial-fill').style.width = Math.min(100, (days/10)*100) + '%';
       }
@@ -917,10 +846,28 @@ async function loadMaids() {
   document.getElementById('maids-count').textContent = maids.length;
   const available = maids.filter(m => m.status === 'available').length;
   const booked = maids.filter(m => m.status === 'booked').length;
+  const trial = maids.filter(m => m.status === 'trial' || m.status === 'contracted').length;
 
-  // تحديث stat cards
+  // تحديث stat card "عاملات متاحة" فقط (النشطة/المكتملة تُحدَّث من loadBookings)
   document.querySelectorAll('.stat-num')[0].textContent = available;
-  document.querySelectorAll('.stat-num')[2].textContent = maids.length;
+
+  // تحديث بطاقة الملخص السريع
+  const qsTotal = document.getElementById('qs-total-maids');
+  const qsAvail = document.getElementById('qs-available');
+  const qsBooked = document.getElementById('qs-booked');
+  const qsTrial = document.getElementById('qs-trial');
+  const qsRating = document.getElementById('qs-rating');
+  if (qsTotal) qsTotal.textContent = `${maids.length} / ${maids.length}`;
+  if (qsAvail) qsAvail.textContent = available;
+  if (qsBooked) qsBooked.textContent = booked;
+  if (qsTrial) qsTrial.textContent = trial;
+  if (qsRating && _officeProfile) {
+    qsRating.textContent = _officeProfile.rating ? `${_officeProfile.rating} / 5` : '— / 5';
+  }
+  const revRating = document.getElementById('rev-page-rating');
+  if (revRating && _officeProfile) {
+    revRating.textContent = _officeProfile.rating ? _officeProfile.rating : '—';
+  }
 
   // تحديث جدول العاملات
   const tbody = document.querySelector('.maids-table tbody');
@@ -963,14 +910,128 @@ async function loadBookings() {
     .from('bookings')
     .select(`*, maids(name, nationality), sponsor_profiles(full_name, phone)`)
     .eq('office_id', _user.id)
-    .in('status', ['pending', 'confirmed', 'trial'])
     .order('created_at', { ascending: false });
 
   if (error) { console.error('bookings:', error); return; }
-  if (!bookings) return;
+  if (!bookings) bookings = [];
 
-  document.getElementById('bookings-count').textContent = bookings.length;
-  document.querySelectorAll('.stat-num')[1].textContent = bookings.filter(b => b.status !== 'completed').length;
+  const activeStatuses = ['pending', 'confirmed', 'trial'];
+  const active = bookings.filter(b => activeStatuses.includes(b.status));
+  const completed = bookings.filter(b => b.status === 'completed');
+
+  // إيرادات هذا الشهر (من الحجوزات المكتملة هذا الشهر)
+  const now = new Date();
+  const thisMonthCompleted = completed.filter(b => {
+    const d = new Date(b.updated_at || b.created_at);
+    return d.getMonth() === now.getMonth() && d.getFullYear() === now.getFullYear();
+  });
+  const monthRevenue = thisMonthCompleted.reduce((sum, b) => sum + (Number(b.total_amount) || 0), 0);
+
+  // stat cards
+  document.getElementById('bookings-count').textContent = active.length;
+  document.querySelectorAll('.stat-num')[1].textContent = active.length;
+  document.querySelectorAll('.stat-num')[2].textContent = completed.length;
+  document.querySelectorAll('.stat-num')[3].textContent = monthRevenue.toLocaleString();
+
+  // ملخص سريع
+  const qsRevenue = document.getElementById('qs-revenue');
+  if (qsRevenue) qsRevenue.textContent = `${monthRevenue.toLocaleString()} د.إ`;
+
+  // صفحة الإيرادات
+  const revMonth = document.getElementById('rev-page-month');
+  const revCompleted = document.getElementById('rev-page-completed');
+  if (revMonth) revMonth.textContent = monthRevenue.toLocaleString();
+  if (revCompleted) revCompleted.textContent = completed.length;
+
+  const revTbody = document.getElementById('rev-page-table-body');
+  if (revTbody) {
+    if (!completed.length) {
+      revTbody.innerHTML = '<tr><td colspan="5">لا توجد مدفوعات بعد</td></tr>';
+    } else {
+      revTbody.innerHTML = completed.slice(0, 20).map(b => `
+        <tr>
+          <td>${b.sponsor_profiles?.full_name || '—'}</td>
+          <td>${b.maids?.name || '—'}</td>
+          <td>${b.booking_type || '—'}</td>
+          <td class="quick-val gold">${(Number(b.total_amount) || 0).toLocaleString()} د.إ</td>
+          <td>${new Date(b.updated_at || b.created_at).toLocaleDateString('ar-AE')}</td>
+        </tr>
+      `).join('');
+    }
+  }
+
+  // آخر الحجوزات (لوحة التحكم الرئيسية)
+  const recentList = document.getElementById('recent-bookings-list');
+  if (recentList) {
+    if (!bookings.length) {
+      recentList.innerHTML = '<div class="empty-state"><div class="empty-title">لا توجد حجوزات بعد</div></div>';
+    } else {
+      recentList.innerHTML = bookings.slice(0, 3).map((b, i) => `
+        <div class="booking-item">
+          <div class="booking-num">${i + 1}</div>
+          <div class="booking-info">
+            <div class="booking-name">${b.sponsor_profiles?.full_name || 'كفيل'}</div>
+            <div class="booking-detail">${b.maids?.name || '—'} — ${b.maids?.nationality || ''} — ${bookingStatusLabel(b.status)}</div>
+          </div>
+          <div class="booking-right">
+            <div class="booking-time">${timeAgo(b.created_at)}</div>
+            <div class="booking-price"><span class="badge ${bookingBadgeClass(b.status)}"><span class="badge-dot"></span>${bookingStatusLabel(b.status)}</span></div>
+          </div>
+        </div>
+      `).join('');
+    }
+  }
+
+  // صفحة الحجوزات النشطة
+  const pageCount = document.getElementById('bookings-page-count');
+  const pageList = document.getElementById('bookings-page-list');
+  if (pageCount) pageCount.textContent = `${active.length} حجوزات`;
+  if (pageList) {
+    if (!active.length) {
+      pageList.innerHTML = '<div class="empty-state"><div class="empty-title">لا توجد حجوزات نشطة</div></div>';
+    } else {
+      pageList.innerHTML = active.map((b, i) => `
+        <div class="booking-item">
+          <div class="booking-num">${i + 1}</div>
+          <div class="booking-info">
+            <div class="booking-name">${b.sponsor_profiles?.full_name || 'كفيل'} — ${b.sponsor_profiles?.phone || ''}</div>
+            <div class="booking-detail">${b.maids?.name || '—'} (${b.maids?.nationality || ''}) — ${bookingStatusLabel(b.status)} — ${timeAgo(b.created_at)}</div>
+          </div>
+          <div class="booking-right">
+            <div style="display:flex;gap:6px;margin-top:4px">
+              <button class="tbl-btn edit" onclick="updateBookingStatus('${b.id}','confirmed')">قبول</button>
+              <button class="tbl-btn del" onclick="updateBookingStatus('${b.id}','cancelled')">إلغاء</button>
+            </div>
+          </div>
+        </div>
+      `).join('');
+    }
+  }
+}
+
+function bookingStatusLabel(status) {
+  const map = { pending: 'حجز مبدئي', confirmed: 'مؤكد', trial: 'فترة تجربة', completed: 'مكتمل', cancelled: 'ملغي' };
+  return map[status] || status || '—';
+}
+function bookingBadgeClass(status) {
+  const map = { pending: 'booked', confirmed: 'booked', trial: 'contracted', completed: 'available', cancelled: 'contracted' };
+  return map[status] || 'booked';
+}
+function timeAgo(dateStr) {
+  if (!dateStr) return '—';
+  const diffMs = new Date() - new Date(dateStr);
+  const mins = Math.floor(diffMs / 60000);
+  if (mins < 60) return `منذ ${mins} دقيقة`;
+  const hours = Math.floor(mins / 60);
+  if (hours < 24) return `منذ ${hours} ساعة`;
+  const days = Math.floor(hours / 24);
+  return `منذ ${days} يوم`;
+}
+// تحديث حالة حجز (قبول/إلغاء)
+async function updateBookingStatus(bookingId, newStatus) {
+  const { error } = await _db.from('bookings').update({ status: newStatus }).eq('id', bookingId);
+  if (error) { alert('خطأ: ' + error.message); return; }
+  await loadBookings();
 }
 
 // حفظ عاملة جديدة
