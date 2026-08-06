@@ -326,8 +326,35 @@ async function loadPy(){const {data}=await db.from('payments').select('*').order
 async function loadKf(){const {data}=await db.from('kafala_ads').select('*').order('created_at',{ascending:false});aKf=data||[];const w=document.getElementById('kf-wrap');if(!aKf.length){w.innerHTML=eh('لا توجد إعلانات نقل كفالة');return;}w.innerHTML=`<div class="tw"><table><thead><tr><th>العاملة</th><th>الإمارة</th><th>الجنسية</th><th>الأيام</th><th>ينتهي</th><th>المبلغ</th><th>الحالة</th><th>إجراء</th></tr></thead><tbody>${aKf.map(k=>{const d=k.days||1;const a=k.status==='active';return`<tr><td>${k.maid_name||'—'}</td><td>${k.city||'—'}</td><td>${k.nationality||'—'}</td><td>${d} يوم</td><td>${fd(k.expires_at)}</td><td style="font-weight:600;color:var(--teal)">${d*30} AED</td><td><span class="bge ${a?'active':'expired'}">${a?'نشط':'منتهي'}</span></td><td><button class="btn ${a?'btn-d':'btn-o'} btn-s" onclick="togKf('${k.id}','${k.status}')">${a?'إيقاف':'تجديد'}</button></td></tr>`;}).join('')}</tbody></table></div>`;}
 async function togKf(id,st){const n=st==='active'?'inactive':'active';await db.from('kafala_ads').update({status:n}).eq('id',id);toast(n==='active'?'تم تفعيل الإعلان ✓':'تم إيقاف الإعلان');loadKf();}
 async function loadAds(){const {data}=await db.from('strip_ads').select('*').order('created_at',{ascending:false});aAds=data||[];const act=aAds.filter(a=>a.status==='active');const rev=aAds.reduce((s,a)=>s+(a.amount||0),0);document.getElementById('ads-cnt').textContent=act.length+' إعلان نشط';document.getElementById('ads-rev').textContent=rev.toLocaleString()+' AED';const w=document.getElementById('ads-wrap');if(!aAds.length){w.innerHTML=eh('لا توجد إعلانات بعد');return;}w.innerHTML=aAds.map(a=>`<div class="ac"><div class="ai"><strong>${a.ad_topic||'—'}</strong><span>${a.advertiser_name||'—'} • ${a.days||1} يوم • ${a.amount||0} AED</span><span style="display:block;margin-top:3px">📞 ${a.phone||'—'}${a.whatsapp?' • واتساب: '+a.whatsapp:''}</span><span style="display:block;margin-top:3px" class="lg">ينتهي: ${fd(a.expires_at)}</span></div><div style="display:flex;gap:6px;flex-shrink:0"><span class="bge ${a.status==='active'?'active':a.status==='pending'?'pending':'expired'}">${a.status==='active'?'نشط':a.status==='pending'?'انتظار':'منتهي'}</span>${a.status==='pending'?`<button class="btn btn-p btn-s" onclick="appAd('${a.id}')">موافقة</button>`:''}<button class="btn btn-d btn-s" onclick="delAd('${a.id}')">حذف</button></div></div>`).join('');}
-async function appAd(id){const a=aAds.find(x=>x.id===id);if(!a)return;await db.from('strip_ads').update({status:'active',starts_at:new Date().toISOString(),expires_at:new Date(Date.now()+(a.days||1)*86400000).toISOString()}).eq('id',id);toast('تم تفعيل الإعلان ✓');loadAds();}
-async function delAd(id){if(!confirm('حذف الإعلان؟'))return;await db.from('strip_ads').delete().eq('id',id);toast('تم الحذف');loadAds();}
+async function appAd(id){
+  const a=aAds.find(x=>x.id===id);
+  if(!a)return;
+  // لو فيه مبلغ مجمّد (payment_intent_id)، لازم نحصّله فعلياً قبل التفعيل
+  if(a.payment_intent_id){
+    toast('جاري تحصيل المبلغ من Stripe...');
+    try{
+      const r=await fetch(`${SU}/functions/v1/stripe-ad-payment`,{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({action:'capture',payment_intent_id:a.payment_intent_id})});
+      const d=await r.json();
+      if(!r.ok||d.error){toast('فشل التحصيل: '+(d.error||'خطأ غير معروف'));return;}
+    }catch(e){toast('تعذّر الاتصال بخدمة الدفع');return;}
+  }
+  await db.from('strip_ads').update({status:'active',starts_at:new Date().toISOString(),expires_at:new Date(Date.now()+(a.days||1)*86400000).toISOString()}).eq('id',id);
+  toast('تم تحصيل المبلغ وتفعيل الإعلان ✓');
+  loadAds();
+}
+async function delAd(id){
+  if(!confirm('حذف الإعلان؟'))return;
+  const a=aAds.find(x=>x.id===id);
+  // لو الإعلان لسا معلّق وفيه مبلغ مجمّد لكن ما تحصّل بعد، نطلق التجميد بدل ما نتركه معلّقاً بحساب المعلن
+  if(a && a.payment_intent_id && a.status==='pending'){
+    try{
+      await fetch(`${SU}/functions/v1/stripe-ad-payment`,{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({action:'cancel',payment_intent_id:a.payment_intent_id})});
+    }catch(e){/* حتى لو فشل الإلغاء بـ Stripe، نكمل حذف الصف — التجميد ينتهي تلقائياً خلال أيام من طرف البنك */}
+  }
+  await db.from('strip_ads').delete().eq('id',id);
+  toast('تم الحذف وإلغاء أي مبلغ مجمّد');
+  loadAds();
+}
 async function sendNotif(){const to=document.getElementById('nt-to').value;const ti=document.getElementById('nt-ti').value.trim();const bo=document.getElementById('nt-bo').value.trim();if(!ti||!bo){toast('أدخل العنوان والنص');return;}try{await db.from('notifications').insert({target:to,title:ti,body:bo,sent_at:new Date().toISOString()});}catch(e){}toast('تم إرسال الإشعار ✓ 📤');document.getElementById('nt-ti').value='';document.getElementById('nt-bo').value='';}
 function changePw(){const p1=document.getElementById('np1').value;const p2=document.getElementById('np2').value;const e=document.getElementById('pw-err');e.textContent='';if(!p1){e.textContent='أدخل كلمة المرور';return;}if(p1!==p2){e.textContent='كلمتا المرور غير متطابقتين';return;}if(p1.length<6){e.textContent='6 أحرف على الأقل';return;}AP=p1;localStorage.setItem('saahl_pass',p1);toast('تم تغيير كلمة المرور ✓');document.getElementById('np1').value='';document.getElementById('np2').value='';}
 function buildCharts(){buildR();buildP();}
