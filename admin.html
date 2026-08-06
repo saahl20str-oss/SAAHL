@@ -115,18 +115,18 @@ tr:hover td{background:var(--bl)}
 
 <div id="ls">
   <div class="lc">
-    <div class="ll"><img src="logo.png" alt="ساهل" onerror="this.parentElement.innerHTML='<span style=font-size:22px;color:#c9a227;font-weight:700>س</span>'"></div>
+    <div class="ll"><img src="saahl-logo.png" alt="ساهل" onerror="this.parentElement.innerHTML='<span style=font-size:22px;color:#c9a227;font-weight:700>س</span>'"></div>
     <h2>ساهل</h2><p>لوحة الأدمن — تسجيل الدخول</p>
-    <div class="fg"><label>البريد الإلكتروني</label><input type="email" id="le-email" value="saahl2030@gmail.com"></div>
+    <div class="fg"><label>البريد الإلكتروني</label><input type="email" id="le-email" placeholder="admin@example.com"></div>
     <div class="fg"><label>كلمة المرور</label><input type="password" id="le-pass" placeholder="••••••••" onkeydown="if(event.key==='Enter')doLogin()"></div>
-    <button class="lb" onclick="doLogin()">دخول</button>
+    <button class="lb" id="le-btn" onclick="doLogin()">دخول</button>
     <div class="le" id="le-err"></div>
   </div>
 </div>
 
 <div class="tb" id="topbar" style="display:none">
   <div class="tb-brand">
-    <div class="lw"><img src="logo.png" alt="ساهل" onerror="this.parentElement.innerHTML='<span style=font-size:18px;color:#c9a227;font-weight:700>س</span>'"></div>
+    <div class="lw"><img src="saahl-logo.png" alt="ساهل" onerror="this.parentElement.innerHTML='<span style=font-size:18px;color:#c9a227;font-weight:700>س</span>'"></div>
     <div><div class="bn">ساهل</div><div class="bs">لوحة الأدمن</div></div>
   </div>
   <div class="tb-r">
@@ -274,8 +274,7 @@ tr:hover td{background:var(--bl)}
 <script>
 const SU='https://ytjrtflmqydnpepdyafa.supabase.co';
 const SK='eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Inl0anJ0ZmxtcXlkbnBlcGR5YWZhIiwicm9sZSI6ImFub24iLCJpYXQiOjE3Nzk1Mzk1MjksImV4cCI6MjA5NTExNTUyOX0.8ObScEKDLhsBjmfgkBqFdadx5xA99pw0CkRWCzxASpw';
-const AE='saahl2030@gmail.com';
-let AP=localStorage.getItem('saahl_pass')||'Saahl2030!';
+// AE/AP (بيانات الدخول الوهمية) أُزيلت — الدخول الآن عبر Supabase Auth حقيقي + تحقق من role='ADMIN'
 const {createClient}=supabase;
 const db=createClient(SU,SK);
 let aOff=[],aSpo=[],aMd=[],aBk=[],aPy=[],aKf=[],aAds=[];
@@ -288,10 +287,47 @@ const eh=m=>`<div class="es"><div class="ei">📭</div><p>${m}<br><small>ستظ�
 function toast(m,d=2500){const t=document.getElementById('toast');t.textContent=m;t.classList.add('show');setTimeout(()=>t.classList.remove('show'),d);}
 function navTo(id){document.querySelectorAll('.pg').forEach(p=>p.classList.remove('active'));document.querySelectorAll('.ni').forEach(n=>n.classList.remove('active'));document.getElementById('pg-'+id).classList.add('active');document.querySelector('[data-p='+id+']')?.classList.add('active');}
 function toggleDark(){isDark=!isDark;document.body.classList.toggle('dark',isDark);localStorage.setItem('saahl_dark',isDark?'1':'0');const cb=document.getElementById('dk-cb');if(cb)cb.checked=isDark;document.getElementById('dkb').textContent=isDark?'☀️':'🌙';}
-function doLogin(){const e=document.getElementById('le-email').value.trim();const p=document.getElementById('le-pass').value;const er=document.getElementById('le-err');er.textContent='';if(e===AE&&p===AP){sessionStorage.setItem('sa','1');showApp();}else er.textContent='بيانات الدخول غير صحيحة';}
-function doLogout(){sessionStorage.removeItem('sa');document.getElementById('ls').style.display='flex';document.getElementById('topbar').style.display='none';document.getElementById('mw').style.display='none';}
+async function doLogin(){
+  const e=document.getElementById('le-email').value.trim();
+  const p=document.getElementById('le-pass').value;
+  const er=document.getElementById('le-err');
+  const btn=document.getElementById('le-btn');
+  er.textContent='';
+  if(!e||!p){er.textContent='أدخل الإيميل وكلمة المرور';return;}
+  btn.disabled=true;btn.textContent='جاري التحقق...';
+  try{
+    const {data,error}=await db.auth.signInWithPassword({email:e,password:p});
+    if(error){er.textContent='بيانات الدخول غير صحيحة';return;}
+    // تحقق إضافي: هل هذا المستخدم فعلاً أدمن؟ (مو مجرد حساب مسجّل عادي)
+    const {data:prof}=await db.from('profiles').select('role').eq('id',data.user.id).single();
+    if(!prof||prof.role!=='ADMIN'){
+      er.textContent='هذا الحساب ليس لديه صلاحيات إدارية';
+      await db.auth.signOut();
+      return;
+    }
+    showApp();
+  }catch(e){
+    er.textContent='تعذّر الاتصال، حاول لاحقاً';
+  }finally{
+    btn.disabled=false;btn.textContent='دخول';
+  }
+}
+async function doLogout(){
+  await db.auth.signOut();
+  document.getElementById('ls').style.display='flex';
+  document.getElementById('topbar').style.display='none';
+  document.getElementById('mw').style.display='none';
+}
 function showApp(){document.getElementById('ls').style.display='none';document.getElementById('topbar').style.display='flex';document.getElementById('mw').style.display='flex';if(isDark){document.body.classList.add('dark');document.getElementById('dkb').textContent='☀️';const cb=document.getElementById('dk-cb');if(cb)cb.checked=true;}loadAll();}
-window.addEventListener('DOMContentLoaded',()=>{if(isDark)document.body.classList.add('dark');if(sessionStorage.getItem('sa')==='1')showApp();});
+window.addEventListener('DOMContentLoaded',async ()=>{
+  if(isDark)document.body.classList.add('dark');
+  const {data:{session}}=await db.auth.getSession();
+  if(session){
+    const {data:prof}=await db.from('profiles').select('role').eq('id',session.user.id).single();
+    if(prof&&prof.role==='ADMIN'){showApp();return;}
+    await db.auth.signOut();
+  }
+});
 async function loadAll(){await Promise.all([loadStats(),loadOff(),loadSpo(),loadMd(),loadBk(),loadPy(),loadKf(),loadAds()]);buildCharts();}
 async function loadStats(){
   const {count:oc}=await db.from('office_profiles').select('*',{count:'exact',head:true});
@@ -356,7 +392,20 @@ async function delAd(id){
   loadAds();
 }
 async function sendNotif(){const to=document.getElementById('nt-to').value;const ti=document.getElementById('nt-ti').value.trim();const bo=document.getElementById('nt-bo').value.trim();if(!ti||!bo){toast('أدخل العنوان والنص');return;}try{await db.from('notifications').insert({target:to,title:ti,body:bo,sent_at:new Date().toISOString()});}catch(e){}toast('تم إرسال الإشعار ✓ 📤');document.getElementById('nt-ti').value='';document.getElementById('nt-bo').value='';}
-function changePw(){const p1=document.getElementById('np1').value;const p2=document.getElementById('np2').value;const e=document.getElementById('pw-err');e.textContent='';if(!p1){e.textContent='أدخل كلمة المرور';return;}if(p1!==p2){e.textContent='كلمتا المرور غير متطابقتين';return;}if(p1.length<6){e.textContent='6 أحرف على الأقل';return;}AP=p1;localStorage.setItem('saahl_pass',p1);toast('تم تغيير كلمة المرور ✓');document.getElementById('np1').value='';document.getElementById('np2').value='';}
+async function changePw(){
+  const p1=document.getElementById('np1').value;
+  const p2=document.getElementById('np2').value;
+  const e=document.getElementById('pw-err');
+  e.textContent='';
+  if(!p1){e.textContent='أدخل كلمة المرور';return;}
+  if(p1!==p2){e.textContent='كلمتا المرور غير متطابقتين';return;}
+  if(p1.length<6){e.textContent='6 أحرف على الأقل';return;}
+  const {error}=await db.auth.updateUser({password:p1});
+  if(error){e.textContent='تعذّر تغيير كلمة المرور: '+error.message;return;}
+  toast('تم تغيير كلمة المرور ✓');
+  document.getElementById('np1').value='';
+  document.getElementById('np2').value='';
+}
 function buildCharts(){buildR();buildP();}
 function buildR(){const ctx=document.getElementById('revChart');if(!ctx)return;if(rC)rC.destroy();const mn=['يناير','فبراير','مارس','أبريل','مايو','يونيو','يوليو','أغسطس','سبتمبر','أكتوبر','نوفمبر','ديسمبر'];const now=new Date();const ms=[],lb=[];for(let i=5;i>=0;i--){const d=new Date(now.getFullYear(),now.getMonth()-i,1);ms.push({y:d.getFullYear(),m:d.getMonth()});lb.push(mn[d.getMonth()]);}const dt=ms.map(m=>aPy.filter(p=>{const d=new Date(p.created_at);return d.getFullYear()===m.y&&d.getMonth()===m.m;}).reduce((s,p)=>s+(p.amount||0),0));rC=new Chart(ctx,{type:'bar',data:{labels:lb,datasets:[{label:'AED',data:dt,backgroundColor:'#0f766e',borderRadius:6,borderSkipped:false}]},options:{responsive:true,maintainAspectRatio:false,plugins:{legend:{display:false}},scales:{y:{beginAtZero:true,ticks:{callback:v=>v.toLocaleString()+' د',font:{family:'Cairo',size:11},color:'#94a3b8'},grid:{color:'rgba(0,0,0,0.04)'}},x:{ticks:{font:{family:'Cairo',size:11},color:'#94a3b8'},grid:{display:false}}}}});}
 function buildP(){const ctx=document.getElementById('pieChart');if(!ctx)return;if(pC)pC.destroy();let s=0,b=0,k=0,a=0;aPy.forEach(p=>{if(p.type==='subscription')s+=p.amount||0;else if(p.type==='booking')b+=p.amount||0;else if(p.type==='kafala_ad')k+=p.amount||0;else if(p.type==='strip_ad')a+=p.amount||0;});const tot=s+b+k+a;const dt=tot===0?[1,1,1,1]:[s,b,k,a];pC=new Chart(ctx,{type:'doughnut',data:{labels:['اشتراك مكاتب','عمولة حجز','إعلان كفالة','إعلان شريط'],datasets:[{data:dt,backgroundColor:['#0f766e','#3b82f6','#f59e0b','#7c3aed'],borderWidth:0,hoverOffset:4}]},options:{responsive:true,maintainAspectRatio:false,cutout:'72%',plugins:{legend:{display:false},tooltip:{callbacks:{label:c=>tot===0?' لا توجد بيانات':` ${c.label}: ${c.raw.toLocaleString()} AED`}}}}});}
