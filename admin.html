@@ -333,7 +333,7 @@ async function appAd(id){
   if(a.payment_intent_id){
     toast('جاري تحصيل المبلغ من Stripe...');
     try{
-      const r=await fetch(`${SU}/functions/v1/stripe-ad-payment`,{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({action:'capture',payment_intent_id:a.payment_intent_id})});
+      const r=await fetch(`${SU}/functions/v1/stripe-ad-payment`,{method:'POST',headers:{'Content-Type':'application/json',apikey:SK,Authorization:'Bearer '+SK},body:JSON.stringify({action:'capture',payment_intent_id:a.payment_intent_id})});
       const d=await r.json();
       if(!r.ok||d.error){toast('فشل التحصيل: '+(d.error||'خطأ غير معروف'));return;}
     }catch(e){toast('تعذّر الاتصال بخدمة الدفع');return;}
@@ -348,7 +348,7 @@ async function delAd(id){
   // لو الإعلان لسا معلّق وفيه مبلغ مجمّد لكن ما تحصّل بعد، نطلق التجميد بدل ما نتركه معلّقاً بحساب المعلن
   if(a && a.payment_intent_id && a.status==='pending'){
     try{
-      await fetch(`${SU}/functions/v1/stripe-ad-payment`,{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({action:'cancel',payment_intent_id:a.payment_intent_id})});
+      await fetch(`${SU}/functions/v1/stripe-ad-payment`,{method:'POST',headers:{'Content-Type':'application/json',apikey:SK,Authorization:'Bearer '+SK},body:JSON.stringify({action:'cancel',payment_intent_id:a.payment_intent_id})});
     }catch(e){/* حتى لو فشل الإلغاء بـ Stripe، نكمل حذف الصف — التجميد ينتهي تلقائياً خلال أيام من طرف البنك */}
   }
   await db.from('strip_ads').delete().eq('id',id);
