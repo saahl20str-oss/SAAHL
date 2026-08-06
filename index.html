@@ -825,7 +825,8 @@ function initStripeCardElement(){
   }
   _stripeElements = _stripe.elements();
   _stripeCard = _stripeElements.create('card', {
-    style: { base: { fontFamily: 'Tajawal, sans-serif', fontSize: '14px', color: '#111' } }
+    style: { base: { fontFamily: 'Tajawal, sans-serif', fontSize: '14px', color: '#111' } },
+    hidePostalCode: true
   });
   _stripeCard.mount('#adv-card-element');
 }
