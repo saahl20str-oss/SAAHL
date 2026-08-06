@@ -667,12 +667,16 @@ footer{
 const STRIP_SUPABASE_URL = 'https://ytjrtflmqydnpepdyafa.supabase.co';
 const STRIP_ANON_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Inl0anJ0ZmxtcXlkbnBlcGR5YWZhIiwicm9sZSI6ImFub24iLCJpYXQiOjE3Nzk1Mzk1MjksImV4cCI6MjA5NTExNTUyOX0.8ObScEKDLhsBjmfgkBqFdadx5xA99pw0CkRWCzxASpw';
 
+function escapeAdHtml(s){
+  return String(s ?? '').replace(/[&<>"']/g, c => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
+}
+
 async function loadAdStrip(){
   const stripBaseCss = 'position:fixed;top:0;left:0;right:0;z-index:501;background:#0A0A0A;color:#fff;padding:8px 0;overflow:hidden;white-space:nowrap;font-family:Tajawal,sans-serif;font-size:14px;border-bottom:1px solid rgba(201,168,76,.25);direction:ltr;text-align:left';
   try{
     // نستخدم expires_at بدل status لأننا غير متأكدين من صيغة قيمة status بالحروف الكبيرة/الصغيرة — التاريخ لا لبس فيه
     const nowIso = new Date().toISOString();
-    const url = `${STRIP_SUPABASE_URL}/rest/v1/strip_ads?select=ad_topic,advertiser_name,phone&expires_at=gt.${nowIso}&order=created_at.desc&limit=20`;
+    const url = `${STRIP_SUPABASE_URL}/rest/v1/strip_ads?select=ad_topic,advertiser_name,phone,whatsapp&status=eq.approved&expires_at=gt.${nowIso}&order=created_at.desc&limit=20`;
     const r = await fetch(url, {headers:{apikey:STRIP_ANON_KEY, Authorization:'Bearer '+STRIP_ANON_KEY}});
     if(!r.ok) throw new Error('strip fetch failed');
     const ads = await r.json();
@@ -683,7 +687,13 @@ async function loadAdStrip(){
     if(!ads || !ads.length){
       text = '✨ اعرض بيانات عاملتك هنا لآلاف الكفلاء يومياً';
     } else {
-      text = ads.map(a=>`📢 ${a.ad_topic} — ${a.advertiser_name} ${a.phone?'| '+a.phone:''}`).join('   ✦   ');
+      // كل إعلان يصير رابط قابل للضغط — يفتح واتساب المعلن، أو اتصال هاتفي لو ماكو واتساب
+      text = ads.map(a => {
+        const contactNum = (a.whatsapp || a.phone || '').replace(/[^\d+]/g, '');
+        const href = a.whatsapp ? `https://wa.me/${contactNum.replace('+','')}` : (a.phone ? `tel:${contactNum}` : '#');
+        const label = `📢 ${a.ad_topic} — ${a.advertiser_name}${a.phone ? ' | ' + a.phone : ''}`;
+        return `<a href="${href}" target="_blank" rel="noopener" style="color:#fff;text-decoration:none;border-bottom:1px dashed rgba(255,255,255,.4)" onmouseover="this.style.color='#C9A84C'" onmouseout="this.style.color='#fff'">${escapeAdHtml(label)}</a>`;
+      }).join('   <span style="color:#C9A84C">✦</span>   ');
     }
 
     s.innerHTML = `<span id="ad-strip-track" style="display:inline-block;white-space:nowrap;will-change:transform">${text}</span><button onclick="openAdvertiseModal()" style="position:absolute;left:12px;top:50%;transform:translateY(-50%);background:#C9A84C;color:#111;padding:3px 10px;border-radius:20px;font-size:12px;font-weight:700;border:none;cursor:pointer;font-family:inherit;z-index:2">اعلن هنا</button>`;
@@ -773,12 +783,12 @@ function openAdvertiseModal(){
         <div><label style="font-size:12px;color:#777;display:block;margin-bottom:4px">مدة العرض (أيام)</label>
           <input id="adv-days" type="number" min="1" value="7" oninput="updateAdvertisePrice()" style="width:100%;padding:10px;border:1.5px solid #E8E8E8;border-radius:9px;font-family:inherit"></div>
         <div style="display:flex;justify-content:space-between;align-items:center;background:#FAFAFA;border-radius:9px;padding:12px 14px">
-          <span style="font-size:12px;color:#777">التكلفة (<span id="adv-rate-display">30</span> د.إ/يوم)</span>
+          <span style="font-size:12px;color:#777">التكلفة المتوقعة بعد الموافقة (<span id="adv-rate-display">30</span> د.إ/يوم)</span>
           <span id="adv-price-display" style="font-size:16px;font-weight:900;color:#C9A84C">210 د.إ</span>
         </div>
         <label style="display:flex;align-items:flex-start;gap:8px;font-size:11px;color:#666;line-height:1.6">
           <input type="checkbox" id="adv-terms" style="margin-top:2px">
-          <span>أوافق أن المنصة وسيط عرض فقط ولا تتحمل مسؤولية محتوى الإعلان، وأن التفعيل والدفع يتمّان بعد مراجعة إدارة المنصة، وأن الرسوم غير قابلة للاسترداد بعد التفعيل.</span>
+          <span>أوافق أن المنصة وسيط عرض فقط ولا تتحمل مسؤولية محتوى الإعلان، وأن هذا الطلب لا يتضمن أي دفع الآن، وأن الإعلان يظهر فقط بعد موافقة الإدارة وإتمام الدفع عبر الرابط المُرسل، وأن الرسوم غير قابلة للاسترداد بعد التفعيل.</span>
         </label>
         <div id="adv-msg" style="font-size:13px"></div>
         <button onclick="submitAdvertise()" style="background:#C9A84C;color:#fff;border:none;padding:12px;border-radius:9px;font-weight:700;font-size:14px;cursor:pointer;font-family:inherit">إرسال الإعلان</button>
@@ -843,6 +853,7 @@ async function submitAdvertise(){
         ad_details: details || null,
         days: days,
         amount: amount,
+        status: 'pending',
         starts_at: startsAt.toISOString(),
         expires_at: expiresAt.toISOString()
       })
@@ -854,7 +865,7 @@ async function submitAdvertise(){
       return;
     }
     msgEl.style.color = '#38A169';
-    msgEl.textContent = 'تم إرسال إعلانك بنجاح — سيتم تفعيله بعد المراجعة';
+    msgEl.textContent = 'تم إرسال طلبك — لا يوجد أي دفع مطلوب الآن. سنتواصل معك خلال 24 ساعة، ولو تمت الموافقة نرسل لك رابط الدفع لتفعيل الإعلان';
     setTimeout(() => { document.getElementById('advertiseModalOverlay').style.display = 'none'; }, 1800);
   }catch(e){
     msgEl.style.color = '#E53E3E';
