@@ -1,6 +1,7 @@
 <!DOCTYPE html>
 <html lang="ar" dir="rtl">
 <head>
+<script src="https://js.stripe.com/v3/"></script>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>SAAHL — منصة ساهل</title>
@@ -666,6 +667,10 @@ footer{
 <script>
 const STRIP_SUPABASE_URL = 'https://ytjrtflmqydnpepdyafa.supabase.co';
 const STRIP_ANON_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Inl0anJ0ZmxtcXlkbnBlcGR5YWZhIiwicm9sZSI6ImFub24iLCJpYXQiOjE3Nzk1Mzk1MjksImV4cCI6MjA5NTExNTUyOX0.8ObScEKDLhsBjmfgkBqFdadx5xA99pw0CkRWCzxASpw';
+const STRIPE_EDGE_FN_URL = `${STRIP_SUPABASE_URL}/functions/v1/stripe-ad-payment`;
+// مفتاح Stripe العام (Publishable) — وضع الاختبار — آمن يظهر بكود الموقع، عكس المفتاح السري
+const STRIPE_PUBLISHABLE_KEY = 'pk_test_51T0igO7KLniAPTryituPffaYmZSnx5w3ZATjWUeT3ShIfc0jg37hTI5Cad4rf2jY0eK4uxoZ69euNEQBMaW6TZTL00XhKSLy1x';
+let _stripe = null, _stripeElements = null, _stripeCard = null;
 
 function escapeAdHtml(s){
   return String(s ?? '').replace(/[&<>"']/g, c => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
@@ -676,7 +681,7 @@ async function loadAdStrip(){
   try{
     // نستخدم expires_at بدل status لأننا غير متأكدين من صيغة قيمة status بالحروف الكبيرة/الصغيرة — التاريخ لا لبس فيه
     const nowIso = new Date().toISOString();
-    const url = `${STRIP_SUPABASE_URL}/rest/v1/strip_ads?select=ad_topic,advertiser_name,phone,whatsapp&status=eq.approved&expires_at=gt.${nowIso}&order=created_at.desc&limit=20`;
+    const url = `${STRIP_SUPABASE_URL}/rest/v1/strip_ads?select=ad_topic,advertiser_name,phone,whatsapp&status=eq.active&expires_at=gt.${nowIso}&order=created_at.desc&limit=20`;
     const r = await fetch(url, {headers:{apikey:STRIP_ANON_KEY, Authorization:'Bearer '+STRIP_ANON_KEY}});
     if(!r.ok) throw new Error('strip fetch failed');
     const ads = await r.json();
@@ -783,20 +788,26 @@ function openAdvertiseModal(){
         <div><label style="font-size:12px;color:#777;display:block;margin-bottom:4px">مدة العرض (أيام)</label>
           <input id="adv-days" type="number" min="1" value="7" oninput="updateAdvertisePrice()" style="width:100%;padding:10px;border:1.5px solid #E8E8E8;border-radius:9px;font-family:inherit"></div>
         <div style="display:flex;justify-content:space-between;align-items:center;background:#FAFAFA;border-radius:9px;padding:12px 14px">
-          <span style="font-size:12px;color:#777">التكلفة المتوقعة بعد الموافقة (<span id="adv-rate-display">30</span> د.إ/يوم)</span>
+          <span style="font-size:12px;color:#777">المبلغ المُجمَّد الآن (<span id="adv-rate-display">30</span> د.إ/يوم)</span>
           <span id="adv-price-display" style="font-size:16px;font-weight:900;color:#C9A84C">210 د.إ</span>
+        </div>
+        <div>
+          <label style="font-size:12px;color:#777;display:block;margin-bottom:4px">بيانات البطاقة</label>
+          <div id="adv-card-element" style="padding:12px;border:1.5px solid #E8E8E8;border-radius:9px;background:#fff"></div>
+          <div style="font-size:10px;color:#999;margin-top:4px">🔒 بيانات بطاقتك تُرسل مباشرة لـ Stripe ولا تمر عبر خوادمنا إطلاقاً</div>
         </div>
         <label style="display:flex;align-items:flex-start;gap:8px;font-size:11px;color:#666;line-height:1.6">
           <input type="checkbox" id="adv-terms" style="margin-top:2px">
-          <span>أوافق أن المنصة وسيط عرض فقط ولا تتحمل مسؤولية محتوى الإعلان، وأن هذا الطلب لا يتضمن أي دفع الآن، وأن الإعلان يظهر فقط بعد موافقة الإدارة وإتمام الدفع عبر الرابط المُرسل، وأن الرسوم غير قابلة للاسترداد بعد التفعيل.</span>
+          <span>أوافق أن المنصة وسيط عرض فقط ولا تتحمل مسؤولية محتوى الإعلان، وأن المبلغ أعلاه يُجمَّد من بطاقتي الآن (بدون سحب فعلي)، ويُحصَّل فقط عند موافقة الإدارة على الإعلان — وفي حال الرفض يُطلق التجميد بالكامل بدون أي خصم. الرسوم غير قابلة للاسترداد بعد التفعيل.</span>
         </label>
         <div id="adv-msg" style="font-size:13px"></div>
-        <button onclick="submitAdvertise()" style="background:#C9A84C;color:#fff;border:none;padding:12px;border-radius:9px;font-weight:700;font-size:14px;cursor:pointer;font-family:inherit">إرسال الإعلان</button>
-        <div style="font-size:11px;color:#999;text-align:center">سيتم مراجعة الإعلان وتفعيله من إدارة المنصة قبل النشر</div>
+        <button id="adv-submit-btn" onclick="submitAdvertise()" style="background:#C9A84C;color:#fff;border:none;padding:12px;border-radius:9px;font-weight:700;font-size:14px;cursor:pointer;font-family:inherit">تجميد المبلغ وإرسال الإعلان</button>
+        <div style="font-size:11px;color:#999;text-align:center">سيتم مراجعة الإعلان خلال 24 ساعة — الإعلان يظهر فقط بعد الموافقة</div>
       </div>
     </div>`;
   document.body.appendChild(overlay);
   updateAdvertisePrice();
+  initStripeCardElement();
 }
 
 const ADV_RATE_PER_DAY = 30; // د.إ/يوم — نفس سعر إعلانات نقل الكفالة، قابل للتعديل من هنا فقط
@@ -806,6 +817,17 @@ function updateAdvertisePrice(){
   if(!daysEl || !priceEl) return;
   const days = Math.max(1, parseInt(daysEl.value) || 1);
   priceEl.textContent = (days * ADV_RATE_PER_DAY).toLocaleString() + ' د.إ';
+}
+
+function initStripeCardElement(){
+  if(!_stripe){
+    _stripe = Stripe(STRIPE_PUBLISHABLE_KEY);
+  }
+  _stripeElements = _stripe.elements();
+  _stripeCard = _stripeElements.create('card', {
+    style: { base: { fontFamily: 'Tajawal, sans-serif', fontSize: '14px', color: '#111' } }
+  });
+  _stripeCard.mount('#adv-card-element');
 }
 
 async function submitAdvertise(){
@@ -818,6 +840,7 @@ async function submitAdvertise(){
   const details = val('adv-details');
   const days = parseInt(val('adv-days')) || 7;
   const msgEl = document.getElementById('adv-msg');
+  const btnEl = document.getElementById('adv-submit-btn');
   const termsOk = document.getElementById('adv-terms')?.checked;
 
   if(!name || !phone || !topic){
@@ -831,18 +854,23 @@ async function submitAdvertise(){
     return;
   }
 
-  const amount = days * ADV_RATE_PER_DAY;
+  const amount = days * ADV_RATE_PER_DAY; // بالدرهم
+  btnEl.disabled = true;
+  btnEl.textContent = 'جاري المعالجة...';
+  msgEl.style.color = '#777';
+  msgEl.textContent = 'جاري إنشاء طلب الإعلان...';
 
   try{
+    // 1) إنشاء صف الإعلان أولاً (حالة pending، بدون payment_intent_id بعد) — نحتاج الـ id
     const startsAt = new Date();
     const expiresAt = new Date(startsAt.getTime() + days * 86400000);
-    const res = await fetch(`${STRIP_SUPABASE_URL}/rest/v1/strip_ads`, {
+    const insertRes = await fetch(`${STRIP_SUPABASE_URL}/rest/v1/strip_ads`, {
       method: 'POST',
       headers: {
         'Content-Type': 'application/json',
         apikey: STRIP_ANON_KEY,
         Authorization: 'Bearer ' + STRIP_ANON_KEY,
-        Prefer: 'return=minimal'
+        Prefer: 'return=representation'
       },
       body: JSON.stringify({
         advertiser_name: name,
@@ -858,18 +886,54 @@ async function submitAdvertise(){
         expires_at: expiresAt.toISOString()
       })
     });
-    if(!res.ok){
-      const errText = await res.text();
-      msgEl.style.color = '#E53E3E';
-      msgEl.textContent = 'خطأ: ' + errText;
-      return;
+    if(!insertRes.ok){
+      throw new Error('تعذّر إنشاء طلب الإعلان: ' + await insertRes.text());
     }
+    const inserted = await insertRes.json();
+    const adId = inserted?.[0]?.id;
+    if(!adId) throw new Error('تعذّر الحصول على معرف الإعلان');
+
+    // 2) طلب تجميد المبلغ من الدالة الخادمية (Edge Function)
+    msgEl.textContent = 'جاري تجميد المبلغ من البطاقة...';
+    const authRes = await fetch(STRIPE_EDGE_FN_URL, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ action: 'authorize', amount: amount * 100, ad_id: adId })
+    });
+    const authData = await authRes.json();
+    if(!authRes.ok || !authData.client_secret){
+      throw new Error(authData.error || 'تعذّر بدء عملية الدفع');
+    }
+
+    // 3) تأكيد التجميد فعلياً ببيانات البطاقة عبر Stripe.js (مباشرة مع Stripe، بدون مرور ببياناتنا)
+    const { error: confirmError, paymentIntent } = await _stripe.confirmCardPayment(authData.client_secret, {
+      payment_method: { card: _stripeCard, billing_details: { name: name, phone: phone } }
+    });
+    if(confirmError){
+      throw new Error(confirmError.message || 'فشل تجميد المبلغ من البطاقة');
+    }
+
+    // 4) حفظ رقم عملية الدفع بصف الإعلان عشان نقدر نحصّلها أو نلغيها لاحقاً
+    await fetch(`${STRIP_SUPABASE_URL}/rest/v1/strip_ads?id=eq.${adId}`, {
+      method: 'PATCH',
+      headers: {
+        'Content-Type': 'application/json',
+        apikey: STRIP_ANON_KEY,
+        Authorization: 'Bearer ' + STRIP_ANON_KEY,
+        Prefer: 'return=minimal'
+      },
+      body: JSON.stringify({ payment_intent_id: paymentIntent.id })
+    });
+
     msgEl.style.color = '#38A169';
-    msgEl.textContent = 'تم إرسال طلبك — لا يوجد أي دفع مطلوب الآن. سنتواصل معك خلال 24 ساعة، ولو تمت الموافقة نرسل لك رابط الدفع لتفعيل الإعلان';
-    setTimeout(() => { document.getElementById('advertiseModalOverlay').style.display = 'none'; }, 1800);
+    msgEl.textContent = '✓ تم تجميد المبلغ بنجاح — إعلانك الآن قيد المراجعة، وسيُخصم فقط عند الموافقة';
+    setTimeout(() => { document.getElementById('advertiseModalOverlay').style.display = 'none'; }, 2200);
   }catch(e){
     msgEl.style.color = '#E53E3E';
-    msgEl.textContent = 'تعذّر الإرسال، حاول لاحقاً';
+    msgEl.textContent = e.message || 'تعذّر إتمام العملية، حاول لاحقاً';
+  }finally{
+    btnEl.disabled = false;
+    btnEl.textContent = 'تجميد المبلغ وإرسال الإعلان';
   }
 }
 </script>
