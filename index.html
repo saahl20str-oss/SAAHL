@@ -668,7 +668,7 @@ const STRIP_SUPABASE_URL = 'https://ytjrtflmqydnpepdyafa.supabase.co';
 const STRIP_ANON_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Inl0anJ0ZmxtcXlkbnBlcGR5YWZhIiwicm9sZSI6ImFub24iLCJpYXQiOjE3Nzk1Mzk1MjksImV4cCI6MjA5NTExNTUyOX0.8ObScEKDLhsBjmfgkBqFdadx5xA99pw0CkRWCzxASpw';
 
 async function loadAdStrip(){
-  const stripBaseCss = 'position:fixed;top:0;left:0;right:0;z-index:501;background:#C9A84C;color:#fff;padding:8px 0;overflow:hidden;white-space:nowrap;font-family:Tajawal,sans-serif;font-size:14px';
+  const stripBaseCss = 'position:fixed;top:0;left:0;right:0;z-index:501;background:#0A0A0A;color:#C9A84C;padding:8px 0;overflow:hidden;white-space:nowrap;font-family:Tajawal,sans-serif;font-size:14px;border-bottom:1px solid rgba(201,168,76,.25)';
   try{
     // نستخدم expires_at بدل status لأننا غير متأكدين من صيغة قيمة status بالحروف الكبيرة/الصغيرة — التاريخ لا لبس فيه
     const nowIso = new Date().toISOString();
@@ -678,15 +678,17 @@ async function loadAdStrip(){
     const ads = await r.json();
     const s = document.getElementById('ad-strip');
     if(!ads || !ads.length){
-      // ماكو إعلانات نشطة حالياً — نعرض الشريط فاضي بس بزر "أعلن هنا" فقط، بدل إخفائه بالكامل
+      // ماكو إعلانات نشطة حالياً — نعرض دعوة تسويقية بدل الاختفاء الكامل
       s.style.cssText = stripBaseCss;
-      s.innerHTML=`<div style="display:inline-block">　كن أول من يعلن هنا　</div><button onclick="openAdvertiseModal()" style="position:absolute;left:12px;top:50%;transform:translateY(-50%);background:#fff;color:#C9A84C;padding:3px 10px;border-radius:20px;font-size:12px;font-weight:700;border:none;cursor:pointer;font-family:inherit">اعلن هنا</button>`;
+      s.innerHTML=`<div style="display:inline-block">　✨ اعرض بيانات عاملتك هنا لآلاف الكفلاء يومياً　</div><button onclick="openAdvertiseModal()" style="position:absolute;left:12px;top:50%;transform:translateY(-50%);background:#C9A84C;color:#111;padding:3px 10px;border-radius:20px;font-size:12px;font-weight:700;border:none;cursor:pointer;font-family:inherit">اعلن هنا</button>`;
       adjustLayoutForStrip();
       return;
     }
     s.style.cssText = stripBaseCss;
     const text=ads.map(a=>`📢 ${a.ad_topic} — ${a.advertiser_name} ${a.phone?'| '+a.phone:''}`).join('   ✦   ');
-    s.innerHTML=`<div style="display:inline-block;animation:scroll 20s linear infinite">　${text}　${text}</div><button onclick="openAdvertiseModal()" style="position:absolute;left:12px;top:50%;transform:translateY(-50%);background:#fff;color:#C9A84C;padding:3px 10px;border-radius:20px;font-size:12px;font-weight:700;border:none;cursor:pointer;font-family:inherit">اعلن هنا</button><style>@keyframes scroll{from{transform:translateX(0)}to{transform:translateX(-50%)}}</style>`;
+    // مدة الحركة تتناسب مع طول النص عشان ما تكون بطيئة على نص قصير ولا سريعة جداً على نص طويل
+    const duration = Math.max(10, Math.min(40, text.length * 0.15));
+    s.innerHTML=`<div style="display:inline-block;animation:scroll ${duration}s linear infinite">　${text}　${text}</div><button onclick="openAdvertiseModal()" style="position:absolute;left:12px;top:50%;transform:translateY(-50%);background:#C9A84C;color:#111;padding:3px 10px;border-radius:20px;font-size:12px;font-weight:700;border:none;cursor:pointer;font-family:inherit">اعلن هنا</button><style>@keyframes scroll{from{transform:translateX(0)}to{transform:translateX(-50%)}}</style>`;
     adjustLayoutForStrip();
   }catch(e){
     console.warn('ad-strip:', e);
