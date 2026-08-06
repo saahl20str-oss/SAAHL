@@ -662,12 +662,13 @@ footer{
 </head>
 
 <body>
-<div id="ad-strip"></div>
+<div id="ad-strip" style="position:fixed;top:0;left:0;right:0;z-index:501"></div>
 <script>
 const STRIP_SUPABASE_URL = 'https://ytjrtflmqydnpepdyafa.supabase.co';
 const STRIP_ANON_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Inl0anJ0ZmxtcXlkbnBlcGR5YWZhIiwicm9sZSI6ImFub24iLCJpYXQiOjE3Nzk1Mzk1MjksImV4cCI6MjA5NTExNTUyOX0.8ObScEKDLhsBjmfgkBqFdadx5xA99pw0CkRWCzxASpw';
 
 async function loadAdStrip(){
+  const stripBaseCss = 'position:fixed;top:0;left:0;right:0;z-index:501;background:#C9A84C;color:#fff;padding:8px 0;overflow:hidden;white-space:nowrap;font-family:Tajawal,sans-serif;font-size:14px';
   try{
     // نستخدم expires_at بدل status لأننا غير متأكدين من صيغة قيمة status بالحروف الكبيرة/الصغيرة — التاريخ لا لبس فيه
     const nowIso = new Date().toISOString();
@@ -678,17 +679,32 @@ async function loadAdStrip(){
     const s = document.getElementById('ad-strip');
     if(!ads || !ads.length){
       // ماكو إعلانات نشطة حالياً — نعرض الشريط فاضي بس بزر "أعلن هنا" فقط، بدل إخفائه بالكامل
-      s.style.cssText='background:#C9A84C;color:#fff;padding:8px 0;overflow:hidden;white-space:nowrap;font-family:Tajawal,sans-serif;font-size:14px;position:relative;z-index:999';
+      s.style.cssText = stripBaseCss;
       s.innerHTML=`<div style="display:inline-block">　كن أول من يعلن هنا　</div><button onclick="openAdvertiseModal()" style="position:absolute;left:12px;top:50%;transform:translateY(-50%);background:#fff;color:#C9A84C;padding:3px 10px;border-radius:20px;font-size:12px;font-weight:700;border:none;cursor:pointer;font-family:inherit">اعلن هنا</button>`;
+      adjustLayoutForStrip();
       return;
     }
-    s.style.cssText='background:#C9A84C;color:#fff;padding:8px 0;overflow:hidden;white-space:nowrap;font-family:Tajawal,sans-serif;font-size:14px;position:relative;z-index:999';
+    s.style.cssText = stripBaseCss;
     const text=ads.map(a=>`📢 ${a.ad_topic} — ${a.advertiser_name} ${a.phone?'| '+a.phone:''}`).join('   ✦   ');
     s.innerHTML=`<div style="display:inline-block;animation:scroll 20s linear infinite">　${text}　${text}</div><button onclick="openAdvertiseModal()" style="position:absolute;left:12px;top:50%;transform:translateY(-50%);background:#fff;color:#C9A84C;padding:3px 10px;border-radius:20px;font-size:12px;font-weight:700;border:none;cursor:pointer;font-family:inherit">اعلن هنا</button><style>@keyframes scroll{from{transform:translateX(0)}to{transform:translateX(-50%)}}</style>`;
+    adjustLayoutForStrip();
   }catch(e){
     console.warn('ad-strip:', e);
+    document.getElementById('ad-strip').style.display = 'none';
+    adjustLayoutForStrip();
   }
 }
+
+// يدفع الناف بار والقسم الرئيسي لأسفل بمقدار ارتفاع الشريط الفعلي، لمنع التداخل بينهما
+function adjustLayoutForStrip(){
+  const strip = document.getElementById('ad-strip');
+  const nav = document.getElementById('mainNav');
+  const hero = document.querySelector('.hero');
+  const stripH = (strip && strip.style.display !== 'none') ? strip.offsetHeight : 0;
+  if(nav) nav.style.top = stripH + 'px';
+  if(hero) hero.style.paddingTop = (120 + stripH) + 'px';
+}
+window.addEventListener('resize', adjustLayoutForStrip);
 loadAdStrip();
 
 // ===== نافذة "أعلن هنا" — نشر إعلان بالشريط العلوي (مكتب/فرد/كفالة) =====
@@ -708,8 +724,8 @@ function openAdvertiseModal(){
         <div><label style="font-size:12px;color:#777;display:block;margin-bottom:4px">نوع المعلن</label>
           <select id="adv-type" style="width:100%;padding:10px;border:1.5px solid #E8E8E8;border-radius:9px;font-family:inherit">
             <option value="مكتب استقدام">مكتب استقدام</option>
-            <option value="فرد">فرد</option>
-            <option value="آخر">آخر</option>
+            <option value="نقل كفالة">صاحب عمل يرغب بنقل كفالة عامل/ة</option>
+            <option value="إعلان عام">إعلان عام آخر</option>
           </select>
         </div>
         <div><label style="font-size:12px;color:#777;display:block;margin-bottom:4px">اسم المعلن</label>
@@ -725,13 +741,31 @@ function openAdvertiseModal(){
         <div><label style="font-size:12px;color:#777;display:block;margin-bottom:4px">تفاصيل الإعلان</label>
           <textarea id="adv-details" rows="3" style="width:100%;padding:10px;border:1.5px solid #E8E8E8;border-radius:9px;font-family:inherit;resize:vertical"></textarea></div>
         <div><label style="font-size:12px;color:#777;display:block;margin-bottom:4px">مدة العرض (أيام)</label>
-          <input id="adv-days" type="number" min="1" value="7" style="width:100%;padding:10px;border:1.5px solid #E8E8E8;border-radius:9px;font-family:inherit"></div>
+          <input id="adv-days" type="number" min="1" value="7" oninput="updateAdvertisePrice()" style="width:100%;padding:10px;border:1.5px solid #E8E8E8;border-radius:9px;font-family:inherit"></div>
+        <div style="display:flex;justify-content:space-between;align-items:center;background:#FAFAFA;border-radius:9px;padding:12px 14px">
+          <span style="font-size:12px;color:#777">التكلفة (<span id="adv-rate-display">30</span> د.إ/يوم)</span>
+          <span id="adv-price-display" style="font-size:16px;font-weight:900;color:#C9A84C">210 د.إ</span>
+        </div>
+        <label style="display:flex;align-items:flex-start;gap:8px;font-size:11px;color:#666;line-height:1.6">
+          <input type="checkbox" id="adv-terms" style="margin-top:2px">
+          <span>أوافق أن المنصة وسيط عرض فقط ولا تتحمل مسؤولية محتوى الإعلان، وأن التفعيل والدفع يتمّان بعد مراجعة إدارة المنصة، وأن الرسوم غير قابلة للاسترداد بعد التفعيل.</span>
+        </label>
         <div id="adv-msg" style="font-size:13px"></div>
         <button onclick="submitAdvertise()" style="background:#C9A84C;color:#fff;border:none;padding:12px;border-radius:9px;font-weight:700;font-size:14px;cursor:pointer;font-family:inherit">إرسال الإعلان</button>
         <div style="font-size:11px;color:#999;text-align:center">سيتم مراجعة الإعلان وتفعيله من إدارة المنصة قبل النشر</div>
       </div>
     </div>`;
   document.body.appendChild(overlay);
+  updateAdvertisePrice();
+}
+
+const ADV_RATE_PER_DAY = 30; // د.إ/يوم — نفس سعر إعلانات نقل الكفالة، قابل للتعديل من هنا فقط
+function updateAdvertisePrice(){
+  const daysEl = document.getElementById('adv-days');
+  const priceEl = document.getElementById('adv-price-display');
+  if(!daysEl || !priceEl) return;
+  const days = Math.max(1, parseInt(daysEl.value) || 1);
+  priceEl.textContent = (days * ADV_RATE_PER_DAY).toLocaleString() + ' د.إ';
 }
 
 async function submitAdvertise(){
@@ -744,12 +778,20 @@ async function submitAdvertise(){
   const details = val('adv-details');
   const days = parseInt(val('adv-days')) || 7;
   const msgEl = document.getElementById('adv-msg');
+  const termsOk = document.getElementById('adv-terms')?.checked;
 
   if(!name || !phone || !topic){
     msgEl.style.color = '#E53E3E';
     msgEl.textContent = 'يرجى تعبئة الاسم ورقم الهاتف وعنوان الإعلان';
     return;
   }
+  if(!termsOk){
+    msgEl.style.color = '#E53E3E';
+    msgEl.textContent = 'يرجى الموافقة على شروط الإعلان أولاً';
+    return;
+  }
+
+  const amount = days * ADV_RATE_PER_DAY;
 
   try{
     const startsAt = new Date();
@@ -770,6 +812,7 @@ async function submitAdvertise(){
         ad_topic: topic,
         ad_details: details || null,
         days: days,
+        amount: amount,
         starts_at: startsAt.toISOString(),
         expires_at: expiresAt.toISOString()
       })
