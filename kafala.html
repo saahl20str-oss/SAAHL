@@ -4,6 +4,8 @@
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0">
 <title>SAAHL — نقل كفالة</title>
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+<script src="https://js.stripe.com/v3/"></script>
 <style>
 *{margin:0;padding:0;box-sizing:border-box;-webkit-tap-highlight-color:transparent}
 :root{
@@ -510,7 +512,9 @@ select.inp{background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.
               <span class="pay-total-lbl">المبلغ الإجمالي (<span id="pay-days">7</span> أيام)</span>
               <span class="pay-total-amt"><span id="pay-total">210</span> د.إ</span>
             </div>
-            <button class="stripe-btn" onclick="processPayment()">
+            <div id="kafala-card-element" style="padding:12px;border:1.5px solid var(--border);border-radius:9px;background:#fff;margin-bottom:10px"></div>
+            <div id="kafala-pay-msg" style="font-size:13px;margin-bottom:10px"></div>
+            <button class="stripe-btn" id="kafala-pay-btn" onclick="processPayment()">
               <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="white" stroke-width="2" stroke-linecap="round"><rect x="1" y="4" width="22" height="16" rx="2"/><line x1="1" y1="10" x2="23" y2="10"/></svg>
               ادفع الآن عبر Stripe
             </button>
@@ -576,15 +580,62 @@ select.inp{background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.
 </div>
 
 <script>
-// ===== DATA =====
-const listings = [
-  {id:1,name:'أحمد رضا',nat:'باكستاني',age:32,prof:'سائق',exp:8,status:'منتهية عقده',emirate:'أبوظبي',skills:['قيادة','صيانة بسيطة'],reason:'انتهى عقد العمل بالتراضي بعد 5 سنوات — حسن السيرة ويبحث عن كفيل جديد في أبوظبي',contact:'+971501234567',sponsor:'محمد الشامسي',expiry:'15 يونيو 2026',daysLeft:22},
-  {id:2,name:'مارتينا فلورس',nat:'فلبيني',age:27,prof:'خادمة منزلية',exp:4,status:'جاهز لنقل الكفالة',emirate:'دبي',skills:['تنظيف','رعاية أطفال','طبخ'],reason:'الكفيل مسافر خارج الدولة لفترة طويلة — العاملة تبحث عن كفيل جديد في دبي',contact:'+971502345678',sponsor:'خالد المنصوري',expiry:'20 يونيو 2026',daysLeft:27},
-  {id:3,name:'رام براساد',nat:'هندي',age:38,prof:'طباخ',exp:12,status:'على كفالتي',emirate:'الشارقة',skills:['طبخ شرقي','طبخ غربي','رعاية مسنين'],reason:'تغير الوضع العائلي ولم نعد بحاجة لطباخ — خبرة 12 سنة ومشهود له بالأمانة والكفاءة',contact:'+971503456789',sponsor:'سعيد الكعبي',expiry:'10 يونيو 2026',daysLeft:17},
-  {id:4,name:'سيف الدين علي',nat:'سوداني',age:29,prof:'عامل نظافة',exp:3,status:'موقوف عن العمل',emirate:'أبوظبي',skills:['تنظيف','حدائق','بستاني'],reason:'أُوقف العمل بسبب تقليص الميزانية — يبحث عن كفيل للعمل في المنزل أو الشركة',contact:'+971504567890',sponsor:'أحمد الزعابي',expiry:'25 يونيو 2026',daysLeft:32},
-  {id:5,name:'ديلشاد حسين',nat:'بنغلاديشي',age:35,prof:'بستاني',exp:6,status:'جاهز لنقل الكفالة',emirate:'دبي',skills:['حدائق','بستاني','تنظيف'],reason:'صاحب العمل انتقل للخارج — يبحث عن عمل في رعاية الحدائق والمساحات الخضراء',contact:'+971505678901',sponsor:'فاطمة العلي',expiry:'30 يونيو 2026',daysLeft:37},
-  {id:6,name:'لولو سانتياغو',nat:'فلبيني',age:24,prof:'خادمة منزلية',exp:2,status:'منتهية عقده',emirate:'الشارقة',skills:['تنظيف','غسيل وكوي','رعاية أطفال'],reason:'انتهى عقد العمل — الكفيل الحالي يبحث عن كفيل جديد لها في الشارقة أو دبي',contact:'+971506789012',sponsor:'نورة المزروعي',expiry:'18 يونيو 2026',daysLeft:25},
-];
+// ===== SUPABASE =====
+const K_SUPABASE_URL = 'https://ytjrtflmqydnpepdyafa.supabase.co';
+const K_ANON_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Inl0anJ0ZmxtcXlkbnBlcGR5YWZhIiwicm9sZSI6ImFub24iLCJpYXQiOjE3Nzk1Mzk1MjksImV4cCI6MjA5NTExNTUyOX0.8ObScEKDLhsBjmfgkBqFdadx5xA99pw0CkRWCzxASpw';
+const _db = supabase.createClient(K_SUPABASE_URL, K_ANON_KEY);
+
+const K_STRIPE_PUBLISHABLE_KEY = 'pk_test_51T0igO7KLniAPTryituPffaYmZSnx5w3ZATjWUeT3ShIfc0jg37hTI5Cad4rf2jY0eK4uxoZ69euNEQBMaW6TZTL00XhKSLy1x';
+const K_STRIPE_EDGE_FN_URL = `${K_SUPABASE_URL}/functions/v1/stripe-featured-payment`;
+let _kStripe = null, _kCardEl = null;
+
+// ===== DATA (تُحمَّل حياً من kafala_ads — إعلانات مدفوعة ونشطة فقط) =====
+let listings = [];
+
+const ARABIC_MONTHS = ['يناير','فبراير','مارس','أبريل','مايو','يونيو','يوليو','أغسطس','سبتمبر','أكتوبر','نوفمبر','ديسمبر'];
+function formatArabicDate(iso) {
+  const d = new Date(iso);
+  return `${d.getDate()} ${ARABIC_MONTHS[d.getMonth()]} ${d.getFullYear()}`;
+}
+
+async function loadListings() {
+  const grid = document.getElementById('listingsGrid');
+  grid.innerHTML = '<div style="grid-column:1/-1;text-align:center;padding:60px 20px;color:var(--muted)">جاري تحميل الإعلانات...</div>';
+  try {
+    const nowIso = new Date().toISOString();
+    const { data, error } = await _db
+      .from('kafala_ads')
+      .select('*')
+      .eq('is_active', true)
+      .eq('payment_status', 'paid')
+      .gt('ends_at', nowIso)
+      .order('created_at', { ascending: false });
+    if (error) throw error;
+    listings = (data || []).map(r => {
+      const daysLeft = Math.max(0, Math.ceil((new Date(r.ends_at) - new Date()) / 86400000));
+      return {
+        id: r.id,
+        name: r.worker_name,
+        nat: r.nationality || '',
+        age: r.age || '',
+        prof: r.profession || '',
+        exp: r.experience_years || 0,
+        status: r.current_status || '',
+        emirate: r.emirate || '',
+        skills: Array.isArray(r.skills) ? r.skills : [],
+        reason: r.reason || '',
+        contact: r.contact_phone,
+        sponsor: r.sponsor_display_name || 'الكفيل',
+        expiry: formatArabicDate(r.ends_at),
+        daysLeft
+      };
+    });
+    renderListings(listings);
+  } catch (e) {
+    console.error('loadListings:', e);
+    grid.innerHTML = '<div style="grid-column:1/-1;text-align:center;padding:60px 20px;color:#E53E3E">تعذّر تحميل الإعلانات، حاول تحديث الصفحة</div>';
+  }
+}
 
 let currentDetail = null;
 let photoData = null;
@@ -721,31 +772,102 @@ function validateForm() {
   return ok;
 }
 
-function processPayment() {
-  if (!validateForm()) { alert('يرجى إكمال جميع الحقول المطلوبة أولاً'); return; }
-  if (!document.getElementById('agreeTerms').checked) { alert('يرجى الموافقة على الشروط والأحكام'); return; }
-
-  const days = parseInt(document.getElementById('adDays').value) || 7;
-  const total = days * 30;
-
-  // Stripe checkout simulation
-  const btn = document.querySelector('.stripe-btn');
-  btn.textContent = 'جاري التحويل لصفحة الدفع...';
-  btn.disabled = true;
-
-  setTimeout(() => {
-    // In production: redirect to Stripe checkout URL
-    // window.location.href = stripeCheckoutUrl;
-    showSuccess();
-  }, 1500);
+function initKafalaCardElement() {
+  if (!window.Stripe) { console.error('Stripe.js لم يُحمَّل'); return; }
+  if (!_kStripe) _kStripe = Stripe(K_STRIPE_PUBLISHABLE_KEY);
+  const elements = _kStripe.elements();
+  _kCardEl = elements.create('card', {
+    style: { base: { fontFamily: 'Tajawal, sans-serif', fontSize: '14px', color: '#111' } },
+    hidePostalCode: true
+  });
+  _kCardEl.mount('#kafala-card-element');
 }
 
-function showSuccess() {
+function collectSkills() {
+  const chips = Array.from(document.querySelectorAll('#skillsWrap .skill-chip.on')).map(el => el.textContent.trim());
+  const extra = document.getElementById('wExtraSkills').value.trim();
+  if (extra) chips.push(...extra.split(',').map(s => s.trim()).filter(Boolean));
+  return chips;
+}
+
+async function processPayment() {
+  if (!validateForm()) { alert('يرجى إكمال جميع الحقول المطلوبة أولاً'); return; }
+  if (!document.getElementById('agreeTerms').checked) { alert('يرجى الموافقة على الشروط والأحكام'); return; }
+  if (!_kCardEl) { alert('تعذّر تحميل نموذج الدفع، أعد تحميل الصفحة'); return; }
+
+  const days = parseInt(document.getElementById('adDays').value) || 7;
+  const total = days * 30; // درهم
+  const btn = document.getElementById('kafala-pay-btn');
+  const msgEl = document.getElementById('kafala-pay-msg');
+
+  btn.disabled = true;
+  btn.textContent = 'جاري معالجة الدفع...';
+  msgEl.style.color = '#777';
+  msgEl.textContent = 'جاري إنشاء عملية الدفع...';
+
+  try {
+    // 1) إنشاء PaymentIntent بخصم فوري عبر الدالة الخادمية (نفس الدالة المستخدمة لتمييز العاملات)
+    const intentRes = await fetch(K_STRIPE_EDGE_FN_URL, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ amount: total * 100 })
+    });
+    const intentData = await intentRes.json();
+    if (!intentRes.ok || !intentData.client_secret) {
+      throw new Error(intentData.error || 'تعذّر بدء عملية الدفع');
+    }
+
+    // 2) تأكيد الدفع فعلياً من البطاقة
+    msgEl.textContent = 'جاري تأكيد الدفع من البطاقة...';
+    const { error: confirmError, paymentIntent } = await _kStripe.confirmCardPayment(intentData.client_secret, {
+      payment_method: { card: _kCardEl }
+    });
+    if (confirmError) throw new Error(confirmError.message || 'فشل الدفع من البطاقة');
+    if (paymentIntent.status !== 'succeeded') {
+      throw new Error('لم تكتمل عملية الدفع (الحالة: ' + paymentIntent.status + ')');
+    }
+
+    // 3) الدفع نجح فعلياً — الآن فقط نُنشئ الإعلان الحقيقي
+    const startsAt = new Date();
+    const endsAt = new Date(startsAt.getTime() + days * 86400000);
+    const { data: inserted, error: insertError } = await _db.from('kafala_ads').insert({
+      worker_name: document.getElementById('wName').value.trim(),
+      nationality: document.getElementById('wNat').value,
+      age: parseInt(document.getElementById('wAge').value) || null,
+      profession: document.getElementById('wProf').value,
+      experience_years: parseInt(document.getElementById('wExp').value) || 0,
+      current_status: document.getElementById('wStatus').value,
+      emirate: document.getElementById('wEmirate').value,
+      skills: collectSkills(),
+      reason: document.getElementById('wReason').value.trim(),
+      contact_phone: document.getElementById('wContact').value.trim(),
+      sponsor_display_name: document.getElementById('sponsorDisplayName').value.trim() || null,
+      ad_days: days,
+      ad_price: total,
+      starts_at: startsAt.toISOString(),
+      ends_at: endsAt.toISOString(),
+      payment_status: 'paid',
+      stripe_session_id: paymentIntent.id,
+      is_active: true
+    }).select().single();
+    if (insertError) throw new Error('الدفع نجح لكن تعذّر نشر الإعلان: ' + insertError.message);
+
+    showSuccess(inserted.id);
+    loadListings();
+  } catch (e) {
+    msgEl.style.color = '#E53E3E';
+    msgEl.textContent = e.message || 'تعذّر إتمام العملية، حاول لاحقاً';
+  } finally {
+    btn.disabled = false;
+    btn.innerHTML = '<svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="white" stroke-width="2" stroke-linecap="round"><rect x="1" y="4" width="22" height="16" rx="2"/><line x1="1" y1="10" x2="23" y2="10"/></svg> ادفع الآن عبر Stripe';
+  }
+}
+
+function showSuccess(adId) {
   document.getElementById('formContent').style.display = 'none';
   const success = document.getElementById('formSuccess');
   success.classList.add('show');
-  const num = 'AD-2026-' + Math.floor(10000 + Math.random() * 90000);
-  document.getElementById('adNum').textContent = num;
+  document.getElementById('adNum').textContent = 'AD-' + String(adId).slice(0, 8).toUpperCase();
   window.scrollTo({top: 0, behavior: 'smooth'});
 }
 
@@ -759,8 +881,9 @@ document.querySelectorAll('.inp').forEach(inp => {
 });
 
 // Init
-renderListings(listings);
+loadListings();
 calcPrice();
+initKafalaCardElement();
 </script>
 </body>
 </html>
