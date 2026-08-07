@@ -815,7 +815,7 @@ async function saveFeatureMaid() {
     amount_paid: amount,
     start_date: startDate.toISOString().slice(0, 10),
     end_date: endDate.toISOString().slice(0, 10),
-    status: 'active'
+    status: 'ACTIVE'
   });
   if (error) {
     msgEl.style.color = '#E53E3E';
