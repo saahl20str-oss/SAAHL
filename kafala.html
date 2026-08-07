@@ -713,9 +713,16 @@ function closeDetail(e) {
   }
 }
 
+function normalizePhone(raw) {
+  let num = String(raw || '').replace(/[^0-9]/g, '');
+  if (num.startsWith('00')) num = num.slice(2);      // 00971... -> 971...
+  if (num.startsWith('0')) num = '971' + num.slice(1); // 05... -> 97150...
+  return num;
+}
+
 function openWhatsapp() {
   if (!currentDetail) return;
-  const num = currentDetail.contact.replace(/[^0-9]/g,'');
+  const num = normalizePhone(currentDetail.contact);
   window.open('https://wa.me/' + num + '?text=' + encodeURIComponent('مرحباً، رأيت إعلان ' + currentDetail.name + ' على منصة SAAHL وأرغب في الاستفسار عن نقل الكفالة'), '_blank');
 }
 
