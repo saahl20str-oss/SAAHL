@@ -3,6 +3,7 @@
 <head>
 <meta charset="UTF-8">
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+<script src="https://js.stripe.com/v3/"></script>
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>SAAHL — لوحة تحكم المكتب</title>
 <style>
@@ -718,11 +719,17 @@ select.pinp{background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3
           </div>
         </div>
       </div>
+      <div class="panel-row pr1">
+        <div class="pfield"><label>بيانات البطاقة</label>
+          <div id="feat-card-element" style="padding:12px;border:1.5px solid #E8E8E8;border-radius:9px;background:#fff"></div>
+          <div style="font-size:10px;color:#999;margin-top:4px">🔒 يُخصم المبلغ فوراً عند نجاح الدفع — بيانات بطاقتك تُرسل مباشرة لـ Stripe</div>
+        </div>
+      </div>
       <div id="feature-save-msg" style="font-size:13px;margin-top:4px"></div>
     </div>
     <div class="panel-foot">
       <button class="pbtn-cancel" onclick="closeFeaturePanel()">إلغاء</button>
-      <button class="pbtn-save" onclick="saveFeatureMaid()">تفعيل التمييز</button>
+      <button class="pbtn-save" id="feat-submit-btn" onclick="saveFeatureMaid()">ادفع وفعّل التمييز</button>
     </div>
   </div>
 </div>
@@ -763,13 +770,18 @@ function closePanel(e) {
   }
 }
 
-// ===== تمييز عاملة =====
+// ===== تمييز عاملة (مدفوع فعلياً — خصم فوري عبر Stripe قبل إنشاء أي صف) =====
+const FEAT_STRIPE_PUBLISHABLE_KEY = 'pk_test_51T0igO7KLniAPTryituPffaYmZSnx5w3ZATjWUeT3ShIfc0jg37hTI5Cad4rf2jY0eK4uxoZ69euNEQBMaW6TZTL00XhKSLy1x';
+const FEAT_STRIPE_EDGE_FN_URL = 'https://ytjrtflmqydnpepdyafa.supabase.co/functions/v1/stripe-featured-payment';
+let _featStripe = null, _featStripeCard = null;
+
 async function openFeaturePanel() {
   document.getElementById('featurePanelOverlay').classList.add('open');
   document.body.style.overflow = 'hidden';
   updateFeaturePrice();
   const sel = document.getElementById('feat-maid-select');
   sel.innerHTML = '<option value="">جاري التحميل...</option>';
+  initFeatureCardElement();
   if (!_user) return;
   const { data: maids, error } = await _db
     .from('maids')
@@ -782,6 +794,16 @@ async function openFeaturePanel() {
     return;
   }
   sel.innerHTML = maids.map(m => `<option value="${m.id}">${m.full_name} (${m.nationality || ''})</option>`).join('');
+}
+function initFeatureCardElement() {
+  if (!window.Stripe) { console.error('Stripe.js لم يُحمَّل — تأكد من وجود <script src="https://js.stripe.com/v3/"> بالصفحة'); return; }
+  if (!_featStripe) _featStripe = Stripe(FEAT_STRIPE_PUBLISHABLE_KEY);
+  const elements = _featStripe.elements();
+  _featStripeCard = elements.create('card', {
+    style: { base: { fontFamily: 'Tajawal, sans-serif', fontSize: '14px', color: '#111' } },
+    hidePostalCode: true
+  });
+  _featStripeCard.mount('#feat-card-element');
 }
 function closeFeaturePanel(e) {
   if (!e || e.target === document.getElementById('featurePanelOverlay')) {
@@ -799,35 +821,77 @@ async function saveFeatureMaid() {
   const maidId = document.getElementById('feat-maid-select').value;
   const days = Number(document.getElementById('feat-days-select').value);
   const msgEl = document.getElementById('feature-save-msg');
+  const btnEl = document.getElementById('feat-submit-btn');
+
   if (!maidId) {
     msgEl.style.color = '#E53E3E';
     msgEl.textContent = 'اختر عاملة أولاً';
     return;
   }
-  const amount = days * 25;
-  const startDate = new Date();
-  const endDate = new Date(startDate.getTime() + days * 86400000);
-
-  const { error } = await _db.from('featured_maids').insert({
-    maid_id: maidId,
-    office_id: _user.id,
-    days: days,
-    amount_paid: amount,
-    start_date: startDate.toISOString().slice(0, 10),
-    end_date: endDate.toISOString().slice(0, 10),
-    status: 'ACTIVE'
-  });
-  if (error) {
+  if (!_featStripeCard) {
     msgEl.style.color = '#E53E3E';
-    msgEl.textContent = 'خطأ: ' + error.message;
+    msgEl.textContent = 'تعذّر تحميل نموذج الدفع، أعد فتح النافذة';
     return;
   }
-  // تحديث حالة التمييز بجدول maids أيضاً
-  await _db.from('maids').update({ is_featured: true, featured_until: endDate.toISOString() }).eq('id', maidId);
 
-  msgEl.style.color = '#38A169';
-  msgEl.textContent = 'تم تفعيل التمييز بنجاح';
-  setTimeout(() => { closeFeaturePanel(); }, 1200);
+  const amount = days * 25; // درهم
+  btnEl.disabled = true;
+  btnEl.textContent = 'جاري معالجة الدفع...';
+  msgEl.style.color = '#777';
+  msgEl.textContent = 'جاري إنشاء عملية الدفع...';
+
+  try {
+    // 1) إنشاء PaymentIntent بخصم فوري (automatic capture) عبر الدالة الخادمية
+    const intentRes = await fetch(FEAT_STRIPE_EDGE_FN_URL, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ amount: amount * 100 })
+    });
+    const intentData = await intentRes.json();
+    if (!intentRes.ok || !intentData.client_secret) {
+      throw new Error(intentData.error || 'تعذّر بدء عملية الدفع');
+    }
+
+    // 2) تأكيد الدفع فعلياً ببيانات البطاقة (خصم فوري عند النجاح، مباشرة مع Stripe)
+    msgEl.textContent = 'جاري تأكيد الدفع من البطاقة...';
+    const { error: confirmError, paymentIntent } = await _featStripe.confirmCardPayment(intentData.client_secret, {
+      payment_method: { card: _featStripeCard }
+    });
+    if (confirmError) {
+      throw new Error(confirmError.message || 'فشل الدفع من البطاقة');
+    }
+    if (paymentIntent.status !== 'succeeded') {
+      throw new Error('لم تكتمل عملية الدفع (الحالة: ' + paymentIntent.status + ')');
+    }
+
+    // 3) الدفع نجح فعلياً — الآن فقط ننشئ صف التمييز
+    const startDate = new Date();
+    const endDate = new Date(startDate.getTime() + days * 86400000);
+    const { error } = await _db.from('featured_maids').insert({
+      maid_id: maidId,
+      office_id: _user.id,
+      days: days,
+      amount_paid: amount,
+      start_date: startDate.toISOString().slice(0, 10),
+      end_date: endDate.toISOString().slice(0, 10),
+      status: 'ACTIVE',
+      payment_intent_id: paymentIntent.id
+    });
+    if (error) throw new Error('الدفع نجح لكن تعذّر حفظ التمييز: ' + error.message);
+
+    // تحديث حالة التمييز بجدول maids أيضاً
+    await _db.from('maids').update({ is_featured: true, featured_until: endDate.toISOString() }).eq('id', maidId);
+
+    msgEl.style.color = '#38A169';
+    msgEl.textContent = '✓ تم الدفع وتفعيل التمييز بنجاح';
+    setTimeout(() => { closeFeaturePanel(); }, 1400);
+  } catch (e) {
+    msgEl.style.color = '#E53E3E';
+    msgEl.textContent = e.message || 'تعذّر إتمام العملية، حاول لاحقاً';
+  } finally {
+    btnEl.disabled = false;
+    btnEl.textContent = 'ادفع وفعّل التمييز';
+  }
 }
 // (saveMaid الحقيقية معرّفة لاحقاً بالملف وتتصل فعلياً بـ Supabase)
 
