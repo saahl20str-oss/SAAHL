@@ -4,6 +4,7 @@
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>SAAHL — البحث عن عاملة</title>
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
 <style>
 *{margin:0;padding:0;box-sizing:border-box;-webkit-tap-highlight-color:transparent}
 :root{
@@ -372,32 +373,81 @@ nav{background:#fff;border-bottom:2px solid var(--border);padding:0 5%;display:f
 </div>
 
 <script>
-// DATA
-const maids = [
-  {id:1,name:'فاطمة أحمد',nat:'فلبينية',age:28,level:'متقدمة',type:'local',salary:1200,officeFee:2800,trialFee:50,skills:['طبخ','تنظيف','رعاية أطفال'],office:'مكتب الأمانة',officeLoc:'أبوظبي',rating:4.8,status:'available',emirate:'أبوظبي'},
-  {id:2,name:'سيتي رحمة',nat:'إندونيسية',age:24,level:'متوسطة',type:'local',salary:1100,officeFee:2500,trialFee:50,skills:['تنظيف','طبخ'],office:'مكتب النور',officeLoc:'دبي',rating:4.6,status:'available',emirate:'دبي'},
-  {id:3,name:'مريم جوزيف',nat:'إثيوبية',age:30,level:'مبتدئة',type:'local',salary:900,officeFee:2000,trialFee:50,skills:['تنظيف'],office:'مكتب الأمانة',officeLoc:'أبوظبي',rating:4.8,status:'available',emirate:'أبوظبي'},
-  {id:4,name:'نور حسين',nat:'سريلانكية',age:26,level:'متقدمة',type:'local',salary:1050,officeFee:2600,trialFee:50,skills:['رعاية مسنين','طبخ','تنظيف'],office:'مكتب الخليج',officeLoc:'الشارقة',rating:4.5,status:'available',emirate:'الشارقة'},
-  {id:5,name:'آنا ماريا',nat:'فلبينية',age:27,level:'خبيرة',type:'local',salary:1300,officeFee:3200,trialFee:50,skills:['رعاية أطفال','طبخ','رعاية مسنين'],office:'مكتب النور',officeLoc:'دبي',rating:4.9,status:'available',emirate:'دبي'},
-  {id:6,name:'رحمة علي',nat:'سودانية',age:32,level:'متوسطة',type:'local',salary:850,officeFee:1900,trialFee:50,skills:['تنظيف','طبخ'],office:'مكتب الخليج',officeLoc:'الشارقة',rating:4.3,status:'booked',emirate:'الشارقة'},
-  {id:7,name:'هيلينا تيفيري',nat:'إثيوبية',age:25,level:'مبتدئة',type:'local',salary:800,officeFee:1800,trialFee:50,skills:['تنظيف'],office:'مكتب الفجر',officeLoc:'عجمان',rating:4.2,status:'available',emirate:'عجمان'},
-  {id:8,name:'ليلاني سانتوس',nat:'فلبينية',age:29,level:'خبيرة',type:'abroad',salary:1400,officeFee:5500,trialFee:50,skills:['رعاية أطفال','رعاية مسنين','طبخ'],office:'مكتب الأمانة',officeLoc:'أبوظبي',rating:4.8,status:'available',emirate:'أبوظبي'},
-  {id:9,name:'ديوي سوساتي',nat:'إندونيسية',age:23,level:'مبتدئة',type:'abroad',salary:950,officeFee:4200,trialFee:50,skills:['تنظيف','طبخ'],office:'مكتب النور',officeLoc:'دبي',rating:4.6,status:'available',emirate:'دبي'},
-  {id:10,name:'أميرة محمد',nat:'سودانية',age:35,level:'خبيرة',type:'local',salary:1150,officeFee:2700,trialFee:50,skills:['رعاية مسنين','طبخ','تنظيف'],office:'مكتب الفجر',officeLoc:'عجمان',rating:4.7,status:'available',emirate:'عجمان'},
-  {id:11,name:'ماريا سيلفا',nat:'فلبينية',age:31,level:'متقدمة',type:'local',salary:1250,officeFee:3000,trialFee:50,skills:['رعاية أطفال','تنظيف'],office:'مكتب الخليج',officeLoc:'الشارقة',rating:4.5,status:'available',emirate:'الشارقة'},
-  {id:12,name:'فاطمة سيسي',nat:'غانية',age:28,level:'متوسطة',type:'local',salary:880,officeFee:2100,trialFee:50,skills:['تنظيف','طبخ'],office:'مكتب الفجر',officeLoc:'عجمان',rating:4.1,status:'available',emirate:'عجمان'},
-];
+// ===== SUPABASE =====
+const S_SUPABASE_URL = 'https://ytjrtflmqydnpepdyafa.supabase.co';
+const S_ANON_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Inl0anJ0ZmxtcXlkbnBlcGR5YWZhIiwicm9sZSI6ImFub24iLCJpYXQiOjE3Nzk1Mzk1MjksImV4cCI6MjA5NTExNTUyOX0.8ObScEKDLhsBjmfgkBqFdadx5xA99pw0CkRWCzxASpw';
+const _db = supabase.createClient(S_SUPABASE_URL, S_ANON_KEY);
 
-const offices = [
-  {name:'مكتب الأمانة للاستقدام',loc:'أبوظبي — الخالدية',maids:7,completed:48,rating:4.8,feats:['داخل الدولة','استقدام خارجي','ضمان الاستبدال']},
-  {name:'مكتب النور للاستقدام',loc:'دبي — ديرة',maids:12,completed:63,rating:4.6,feats:['داخل الدولة','استقدام خارجي']},
-  {name:'مكتب الخليج',loc:'الشارقة — الصابر',maids:5,completed:31,rating:4.5,feats:['داخل الدولة','ضمان الاستبدال']},
-  {name:'مكتب الفجر للاستقدام',loc:'عجمان — المنامة',maids:4,completed:18,rating:4.2,feats:['داخل الدولة']},
-];
+// ===== DATA (تُحمَّل حياً من maids + office_profiles) =====
+let maids = [];
+let offices = [];
 
 let currentTab = 'maids';
 let qfNat = '';
 let selectedMaid = null;
+
+async function loadData() {
+  const grid = document.getElementById('maidsGrid');
+  grid.innerHTML = '<div style="grid-column:1/-1;text-align:center;padding:60px 20px;color:var(--muted)">جاري تحميل العاملات...</div>';
+  try {
+    const { data, error } = await _db
+      .from('maids')
+      .select('id, full_name, nationality, age, experience_level, maid_type, monthly_salary, office_fee, trial_period_fee, skills, status, office_id, office_profiles(office_name, emirate, area, rating, total_reviews, office_features)')
+      .in('status', ['AVAILABLE', 'BOOKED']);
+    if (error) throw error;
+
+    maids = (data || []).map(r => ({
+      id: r.id,
+      name: r.full_name,
+      nat: r.nationality || '',
+      age: r.age || '',
+      level: r.experience_level || '',
+      type: (r.maid_type || '').toUpperCase() === 'ABROAD' ? 'abroad' : 'local',
+      salary: r.monthly_salary || 0,
+      officeFee: r.office_fee || 0,
+      trialFee: r.trial_period_fee || 0,
+      skills: Array.isArray(r.skills) ? r.skills : (r.skills ? String(r.skills).split(',').map(s => s.trim()) : []),
+      office: r.office_profiles?.office_name || 'مكتب استقدام',
+      officeLoc: r.office_profiles?.emirate || '',
+      rating: r.office_profiles?.rating || 0,
+      status: r.status === 'AVAILABLE' ? 'available' : 'booked',
+      emirate: r.office_profiles?.emirate || '',
+      officeId: r.office_id
+    }));
+
+    // بناء قائمة المكاتب من نفس بيانات العاملات (بدون استعلام إضافي) + بيانات المكتب الحقيقية
+    const officeMap = new Map();
+    (data || []).forEach(r => {
+      if (!r.office_id) return;
+      if (!officeMap.has(r.office_id)) {
+        officeMap.set(r.office_id, {
+          name: r.office_profiles?.office_name || 'مكتب استقدام',
+          loc: [r.office_profiles?.emirate, r.office_profiles?.area].filter(Boolean).join(' — '),
+          rating: r.office_profiles?.rating || 0,
+          reviews: r.office_profiles?.total_reviews || 0,
+          feats: Array.isArray(r.office_profiles?.office_features) ? r.office_profiles.office_features : [],
+          maidsCount: 0
+        });
+      }
+      officeMap.get(r.office_id).maidsCount++;
+    });
+    offices = Array.from(officeMap.values());
+
+    renderMaids(maids);
+    renderOffices();
+
+    // لو الرابط فيه maidId (قادم من نافذة الأضواء بالصفحة الرئيسية)، افتح تفاصيل هذي العاملة تحديداً
+    const params = new URLSearchParams(window.location.search);
+    const targetMaidId = params.get('maidId');
+    if (targetMaidId) {
+      const found = maids.find(m => String(m.id) === targetMaidId);
+      if (found) openDetail(targetMaidId);
+    }
+  } catch (e) {
+    console.error('loadData:', e);
+    grid.innerHTML = '<div style="grid-column:1/-1;text-align:center;padding:60px 20px;color:#E53E3E">تعذّر تحميل العاملات، حاول تحديث الصفحة</div>';
+  }
+}
 
 function renderMaids(list) {
   const grid = document.getElementById('maidsGrid');
@@ -407,7 +457,7 @@ function renderMaids(list) {
     return;
   }
   grid.innerHTML = list.map(m => `
-    <div class="mcard" onclick="openDetail(${m.id})">
+    <div class="mcard" onclick="openDetail('${m.id}')">
       <div class="mcard-img">
         <div class="mcard-avatar-big">${m.name[0]}</div>
         <div class="mcard-badge">
@@ -429,7 +479,7 @@ function renderMaids(list) {
           ${m.type === 'abroad' ? '<span class="mcard-tag" style="color:var(--gold-d);background:var(--gold-l);border-color:rgba(201,168,76,.2)">من الخارج</span>' : ''}
         </div>
         <div class="mcard-salary">${m.salary.toLocaleString()} <span>د.إ / شهر</span></div>
-        <button class="mcard-btn" onclick="event.stopPropagation();openDetail(${m.id})">
+        <button class="mcard-btn" onclick="event.stopPropagation();openDetail('${m.id}')">
           ${m.status === 'available' ? 'عرض التفاصيل وحجز' : 'عرض التفاصيل'}
         </button>
       </div>
@@ -438,10 +488,14 @@ function renderMaids(list) {
 }
 
 function renderOffices() {
+  if (!offices.length) {
+    document.getElementById('officesGrid').innerHTML = '<div style="grid-column:1/-1;text-align:center;padding:60px 20px;color:var(--muted)">لا توجد مكاتب متاحة حالياً</div>';
+    return;
+  }
   document.getElementById('officesGrid').innerHTML = offices.map(o => `
     <div class="ocard">
       <div class="ocard-head">
-        <div class="ocard-logo">${o.name[5]}</div>
+        <div class="ocard-logo">${(o.name || 'م')[5] || (o.name || 'م')[0]}</div>
         <div>
           <div class="ocard-office-name">${o.name}</div>
           <div class="ocard-loc">${o.loc}</div>
@@ -449,9 +503,9 @@ function renderOffices() {
       </div>
       <div class="ocard-body">
         <div class="ocard-stats">
-          <div class="ostat"><div class="ostat-num">${o.maids}</div><div class="ostat-lbl">عاملة</div></div>
-          <div class="ostat"><div class="ostat-num">${o.completed}</div><div class="ostat-lbl">مكتمل</div></div>
-          <div class="ostat"><div class="ostat-num" style="color:var(--gold)">${o.rating}</div><div class="ostat-lbl">تقييم</div></div>
+          <div class="ostat"><div class="ostat-num">${o.maidsCount}</div><div class="ostat-lbl">عاملة</div></div>
+          <div class="ostat"><div class="ostat-num">${o.reviews}</div><div class="ostat-lbl">تقييمات</div></div>
+          <div class="ostat"><div class="ostat-num" style="color:var(--gold)">${o.rating || '—'}</div><div class="ostat-lbl">تقييم</div></div>
         </div>
         <div class="ocard-feats">${o.feats.map(f=>`<span class="ocard-feat">${f}</span>`).join('')}</div>
         <button class="ocard-btn" onclick="alert('سيتم فتح صفحة المكتب')">عرض المكتب والعاملات</button>
@@ -507,7 +561,7 @@ function switchTab(btn, tab) {
 }
 
 function openDetail(id) {
-  selectedMaid = maids.find(m => m.id === id);
+  selectedMaid = maids.find(m => String(m.id) === String(id));
   if (!selectedMaid) return;
   const m = selectedMaid;
   document.getElementById('bookSuccess').classList.remove('show');
@@ -564,8 +618,7 @@ function resetFilters() {
 }
 
 // Init
-renderMaids(maids);
-renderOffices();
+loadData();
 </script>
 </body>
 </html>
