@@ -649,7 +649,7 @@ function renderListings(list) {
     return;
   }
   grid.innerHTML = list.map(l => `
-    <div class="lcard" onclick="openDetail(${l.id})">
+    <div class="lcard" onclick="openDetail('${l.id}')">
       <div class="lcard-img">
         <div class="lcard-avatar">${l.name[0]}</div>
         <div class="lcard-profession">
