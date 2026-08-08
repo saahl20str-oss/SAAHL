@@ -148,7 +148,6 @@ tr:hover td{background:var(--bl)}
     <div class="ns">الإدارة</div>
     <div class="ni" data-p="offices" onclick="navTo('offices')"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><path d="M3 21h18M5 21V7l7-4 7 4v14M9 21v-4h6v4"/></svg>المكاتب</div>
     <div class="ni" data-p="sponsors" onclick="navTo('sponsors')"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M23 21v-2a4 4 0 0 0-3-3.87M16 3.13a4 4 0 0 1 0 7.75"/></svg>الكفلاء</div>
-    <div class="ni" data-p="maids" onclick="navTo('maids')"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><rect x="2" y="5" width="20" height="14" rx="2"/><path d="M16 10a2 2 0 1 1-4 0 2 2 0 0 1 4 0zM6 10h2M6 14h4"/></svg>العاملات</div>
     <div class="ni" data-p="bookings" onclick="navTo('bookings')"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><rect x="3" y="4" width="18" height="18" rx="2"/><path d="M16 2v4M8 2v4M3 10h18"/><path d="M9 16l2 2 4-4"/></svg>الحجوزات</div>
     <div class="ns">المالية</div>
     <div class="ni" data-p="payments" onclick="navTo('payments')"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><rect x="1" y="4" width="22" height="16" rx="2"/><path d="M1 10h22"/></svg>المدفوعات</div>
@@ -185,12 +184,6 @@ tr:hover td{background:var(--bl)}
       <div class="pt">إدارة الكفلاء</div>
       <div class="fb"><input type="text" id="spo-s" placeholder="🔍 بحث..." oninput="filterSponsors()"></div>
       <div class="cd" style="padding:0;overflow:hidden"><div id="spo-wrap"><div class="ld"><div class="sp"></div>جارٍ التحميل...</div></div></div>
-    </div>
-
-    <div id="pg-maids" class="pg">
-      <div class="pt">إدارة العاملات</div>
-      <div class="fb"><input type="text" id="md-s" placeholder="🔍 بحث..." oninput="filterMaids()"><select id="md-n" onchange="filterMaids()"><option value="">كل الجنسيات</option><option value="إندونيسيا">إندونيسيا</option><option value="الفلبين">الفلبين</option><option value="إثيوبيا">إثيوبيا</option><option value="نيبال">نيبال</option></select><select id="md-st" onchange="filterMaids()"><option value="">كل الحالات</option><option value="available">متاحة</option><option value="booked">محجوزة</option><option value="kafala">نقل كفالة</option></select></div>
-      <div class="cd" style="padding:0;overflow:hidden"><div id="md-wrap"><div class="ld"><div class="sp"></div>جارٍ التحميل...</div></div></div>
     </div>
 
     <div id="pg-bookings" class="pg">
@@ -281,7 +274,7 @@ const SK='eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6I
 // AE/AP (بيانات الدخول الوهمية) أُزيلت — الدخول الآن عبر Supabase Auth حقيقي + تحقق من role='ADMIN'
 const {createClient}=supabase;
 const db=createClient(SU,SK);
-let aOff=[],aSpo=[],aMd=[],aBk=[],aPy=[],aKf=[],aAds=[];
+let aOff=[],aSpo=[],aBk=[],aPy=[],aKf=[],aAds=[];
 let rC,pC,isDark=localStorage.getItem('saahl_dark')==='1';
 const clrs=['#0f766e','#2563eb','#7c3aed','#d97706','#059669','#dc2626','#0891b2'];
 const ac=s=>clrs[(s||'').charCodeAt(0)%clrs.length];
@@ -336,7 +329,7 @@ window.addEventListener('DOMContentLoaded',async ()=>{
   document.getElementById('ls-loading').style.display='none';
   document.getElementById('ls-form').style.display='block';
 });
-async function loadAll(){await Promise.all([loadStats(),loadOff(),loadSpo(),loadMd(),loadBk(),loadPy(),loadKf(),loadAds()]);buildCharts();}
+async function loadAll(){await Promise.all([loadStats(),loadOff(),loadSpo(),loadBk(),loadPy(),loadKf(),loadAds()]);buildCharts();}
 async function loadStats(){
   const {count:oc}=await db.from('office_profiles').select('*',{count:'exact',head:true});
   document.getElementById('s-off').textContent=oc??0;document.getElementById('ss-off').textContent=oc?oc+' مكتب مسجل':'لا يوجد مكاتب بعد';
@@ -362,9 +355,6 @@ async function loadSpo(){const {data}=await db.from('sponsor_profiles').select('
 function renderSpo(data){const w=document.getElementById('spo-wrap');if(!data.length){w.innerHTML=eh('لا يوجد كفلاء مسجلون');return;}w.innerHTML=`<div class="tw"><table><thead><tr><th>الكفيل</th><th>الإمارة</th><th>البريد</th><th>تاريخ التسجيل</th><th>إجراء</th></tr></thead><tbody>${data.map(s=>`<tr><td><div class="rf"><div class="av" style="background:${ac(s.full_name)}">${ini(s.full_name)}</div>${s.full_name||'—'}</div></td><td>${s.emirate||'—'}</td><td>${s.email||'—'}</td><td>${fd(s.created_at)}</td><td><button class="btn btn-d btn-s" onclick="delSpo('${s.id}')">حذف</button></td></tr>`).join('')}</tbody></table></div>`;}
 function filterSponsors(){const q=document.getElementById('spo-s').value.toLowerCase();renderSpo(aSpo.filter(s=>!q||(s.full_name||'').toLowerCase().includes(q)));}
 async function delSpo(id){if(!confirm('حذف الكفيل؟'))return;await db.from('sponsor_profiles').delete().eq('id',id);toast('تم حذف الكفيل ✓');loadSpo();}
-async function loadMd(){const {data}=await db.from('maids').select('*').order('created_at',{ascending:false});aMd=data||[];renderMd(aMd);}
-function renderMd(data){const w=document.getElementById('md-wrap');if(!data.length){w.innerHTML=eh('لا توجد عاملات مضافة');return;}const sl={available:'متاحة',booked:'محجوزة',kafala:'نقل كفالة'};w.innerHTML=`<div class="tw"><table><thead><tr><th>الاسم</th><th>الجنسية</th><th>الخبرة</th><th>المكتب</th><th>الحالة</th></tr></thead><tbody>${data.map(m=>`<tr><td><div class="rf"><div class="av" style="background:${ac(m.name)}">${ini(m.name)}</div>${m.name||'—'}</div></td><td>${m.nationality||'—'}</td><td>${m.experience||'—'}</td><td>${m.office_name||'—'}</td><td><span class="bge ${m.status||'pending'}">${sl[m.status]||m.status||'—'}</span></td></tr>`).join('')}</tbody></table></div>`;}
-function filterMaids(){const q=document.getElementById('md-s').value.toLowerCase();const n=document.getElementById('md-n').value;const s=document.getElementById('md-st').value;renderMd(aMd.filter(m=>(!q||(m.name||'').toLowerCase().includes(q))&&(!n||m.nationality===n)&&(!s||m.status===s)));}
 async function loadBk(){const {data}=await db.from('bookings').select('*').order('created_at',{ascending:false});aBk=data||[];const w=document.getElementById('bk-wrap');if(!aBk.length){w.innerHTML=eh('لا توجد حجوزات');return;}w.innerHTML=`<div class="tw"><table><thead><tr><th>الكفيل</th><th>العاملة</th><th>المكتب</th><th>التاريخ</th><th>الحالة</th><th>العمولة</th></tr></thead><tbody>${aBk.map(b=>`<tr><td>${b.sponsor_name||'—'}</td><td>${b.maid_name||'—'}</td><td>${b.office_name||'—'}</td><td>${fd(b.created_at)}</td><td><span class="bge ${b.status==='booked'?'booked':b.status==='completed'?'active':'pending'}">${b.status==='booked'?'محجوزة':b.status==='completed'?'مكتملة':'معلقة'}</span></td><td style="font-weight:600;color:var(--teal)">69 AED</td></tr>`).join('')}</tbody></table></div>`;}
 async function loadPy(){const {data}=await db.from('payments').select('*').order('created_at',{ascending:false});aPy=data||[];let o=0,b=0,k=0;aPy.forEach(p=>{if(p.type==='subscription')o+=p.amount||0;else if(p.type==='booking')b+=p.amount||0;else if(p.type==='kafala_ad')k+=p.amount||0;});document.getElementById('py-off').textContent=o.toLocaleString()+' AED';document.getElementById('py-bk').textContent=b.toLocaleString()+' AED';document.getElementById('py-kf').textContent=k.toLocaleString()+' AED';const w=document.getElementById('py-wrap');if(!aPy.length){w.innerHTML=eh('لا توجد مدفوعات');return;}const tl={subscription:'اشتراك شهري',booking:'عمولة حجز',kafala_ad:'إعلان كفالة',strip_ad:'إعلان شريط'};w.innerHTML=`<div class="tw"><table><thead><tr><th>المستخدم</th><th>النوع</th><th>المبلغ</th><th>التاريخ</th><th>الحالة</th></tr></thead><tbody>${aPy.map(p=>`<tr><td>${p.user_name||'—'}</td><td>${tl[p.type]||p.type||'—'}</td><td style="font-weight:600;color:var(--teal)">${(p.amount||0).toLocaleString()} AED</td><td>${fd(p.created_at)}</td><td><span class="bge ${p.status==='paid'?'active':'expired'}">${p.status==='paid'?'مكتمل':'فشل'}</span></td></tr>`).join('')}</tbody></table></div>`;}
 async function loadKf(){const {data}=await db.from('kafala_ads').select('*').order('created_at',{ascending:false});aKf=data||[];const w=document.getElementById('kf-wrap');if(!aKf.length){w.innerHTML=eh('لا توجد إعلانات نقل كفالة');return;}w.innerHTML=`<div class="tw"><table><thead><tr><th>العاملة</th><th>الإمارة</th><th>الجنسية</th><th>الأيام</th><th>ينتهي</th><th>المبلغ</th><th>الحالة</th><th>إجراء</th></tr></thead><tbody>${aKf.map(k=>{const d=k.days||1;const a=k.status==='active';return`<tr><td>${k.maid_name||'—'}</td><td>${k.city||'—'}</td><td>${k.nationality||'—'}</td><td>${d} يوم</td><td>${fd(k.expires_at)}</td><td style="font-weight:600;color:var(--teal)">${d*30} AED</td><td><span class="bge ${a?'active':'expired'}">${a?'نشط':'منتهي'}</span></td><td><button class="btn ${a?'btn-d':'btn-o'} btn-s" onclick="togKf('${k.id}','${k.status}')">${a?'إيقاف':'تجديد'}</button></td></tr>`;}).join('')}</tbody></table></div>`;}
