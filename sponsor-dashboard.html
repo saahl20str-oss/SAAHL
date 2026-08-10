@@ -949,15 +949,15 @@ async function loadSponsorBookings() {
   if (!_user) return;
   const { data: bookings, error } = await _db
     .from('bookings')
-    .select(`*, maids(name, nationality, salary), office_profiles(office_name, whatsapp)`)
+    .select(`*, maids(full_name, nationality, monthly_salary), office_profiles(office_name, whatsapp)`)
     .eq('sponsor_id', _user.id)
     .order('created_at', { ascending: false });
 
   if (error) { console.error('sponsor bookings:', error); return; }
   if (!bookings || !bookings.length) return;
 
-  const active = bookings.filter(b => ['pending','confirmed','trial'].includes(b.status));
-  const completed = bookings.filter(b => b.status === 'completed');
+  const active = bookings.filter(b => ['RESERVED','CONFIRMED_TRIAL','PROCESSED_FOR_VISA'].includes(b.status));
+  const completed = bookings.filter(b => b.status === 'COMPLETED');
 
   document.querySelectorAll('.sc-num')[0].textContent = active.length;
   document.querySelectorAll('.sc-num')[2].textContent = completed.length;
@@ -968,9 +968,9 @@ async function loadSponsorContracts() {
   if (!_user) return;
   const { data: contracts } = await _db
     .from('bookings')
-    .select('id, status, created_at, maids(name)')
+    .select('id, status, created_at, maids(full_name)')
     .eq('sponsor_id', _user.id)
-    .in('status', ['trial', 'completed']);
+    .in('status', ['CONFIRMED_TRIAL', 'COMPLETED']);
 
   if (!contracts || !contracts.length) return;
 }
