@@ -928,15 +928,18 @@ async function initSponsorDashboard() {
     if (!user) { window.location.href = 'login.html'; return; }
     _user = user;
 
-    const { data: profile } = await _db.from('profiles').select('*').eq('id', user.id).single();
+    const { data: profile } = await _db.from('profiles').select('*').eq('id', user.id).maybeSingle();
     if (!profile || profile.role !== 'SPONSOR') { window.location.href = 'login.html'; return; }
 
-    const { data: sponsor } = await _db.from('sponsor_profiles').select('*').eq('id', user.id).single();
-    if (sponsor) {
-      document.querySelector('.sb-user-name').textContent = sponsor.full_name || profile.full_name || 'مستخدم';
-      document.querySelector('.sb-avatar').textContent = (sponsor.full_name || 'م')[0];
-      document.querySelector('.sb-user-tag').textContent = 'كفيل — ' + (sponsor.emirate || 'الإمارات');
-      document.getElementById('pgSub').textContent = 'مرحباً ' + (sponsor.full_name || '') + ' — ' + new Date().toLocaleDateString('ar-AE', {weekday:'long',day:'numeric',month:'long',year:'numeric'});
+    const { data: sponsor } = await _db.from('sponsor_profiles').select('*').eq('id', user.id).maybeSingle();
+    // نستبدل الاسم الافتراضي دايماً — حتى لو ما أكمل الحساب ملفه الشخصي بعد (sponsor_profiles فاضي)
+    const displayName = sponsor?.full_name || profile.full_name || user.email || 'مستخدم';
+    document.querySelector('.sb-user-name').textContent = displayName;
+    document.querySelector('.sb-avatar').textContent = displayName[0];
+    document.querySelector('.sb-user-tag').textContent = 'كفيل — ' + (sponsor?.emirate || 'الإمارات');
+    document.getElementById('pgSub').textContent = 'مرحباً ' + displayName + ' — ' + new Date().toLocaleDateString('ar-AE', {weekday:'long',day:'numeric',month:'long',year:'numeric'});
+    if (!sponsor) {
+      console.warn('لا يوجد ملف شخصي (sponsor_profiles) لهذا الحساب بعد — يحتاج إكمال التسجيل');
     }
 
     await loadSponsorBookings();
@@ -953,15 +956,28 @@ async function loadSponsorBookings() {
     .eq('sponsor_id', _user.id)
     .order('created_at', { ascending: false });
 
-  if (error) { console.error('sponsor bookings:', error); return; }
-  if (!bookings || !bookings.length) return;
+  if (error) { console.error('sponsor bookings:', error); }
 
-  const active = bookings.filter(b => ['RESERVED','CONFIRMED_TRIAL','PROCESSED_FOR_VISA'].includes(b.status));
-  const completed = bookings.filter(b => b.status === 'COMPLETED');
+  const active = (bookings || []).filter(b => ['RESERVED','CONFIRMED_TRIAL','PROCESSED_FOR_VISA'].includes(b.status));
+  const completed = (bookings || []).filter(b => b.status === 'COMPLETED');
+  const totalPaid = (bookings || []).reduce((s, b) => s + (b.initial_payment || 0) + (b.final_payment || 0), 0);
 
-  document.querySelectorAll('.sc-num')[0].textContent = active.length;
-  document.querySelectorAll('.sc-num')[2].textContent = completed.length;
-  document.querySelector('.ni-badge').textContent = active.length;
+  const nums = document.querySelectorAll('.sc-num');
+  if (nums[0]) nums[0].textContent = active.length;
+  if (nums[1]) nums[1].textContent = (bookings || []).filter(b => b.status === 'PROCESSED_FOR_VISA').length;
+  if (nums[2]) nums[2].textContent = completed.length;
+  if (nums[3]) nums[3].textContent = totalPaid.toLocaleString();
+  const badge = document.querySelector('.ni-badge');
+  if (badge) badge.textContent = active.length;
+
+  // لا توجد حجوزات حقيقية بعد — نمسح البطاقات التجريبية الثابتة ونعرض حالة فارغة حقيقية
+  // بدل ما نتركها معروضة دايماً لأي حساب جديد بدون أي حجز فعلي
+  const emptyHtml = '<div style="text-align:center;padding:40px 20px;color:var(--muted,#888)">لا توجد حجوزات بعد</div>';
+  document.querySelectorAll('.bk-list').forEach(el => {
+    el.innerHTML = (bookings && bookings.length) ? el.innerHTML : emptyHtml;
+  });
+  // TODO: عند وجود حجوزات حقيقية، يحتاج بناء دالة renderBookingCard(b) كاملة
+  // تعرض بيانات كل حجز فعلياً (اسم العاملة، المكتب، الحالة، المبلغ) بدل الاكتفاء بالحالة الفارغة
 }
 
 async function loadSponsorContracts() {
