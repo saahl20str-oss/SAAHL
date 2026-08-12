@@ -298,15 +298,20 @@ nav{background:#fff;border-bottom:2px solid var(--border);padding:0 5%;display:f
     </div>
 
     <div class="result-tabs">
-      <button class="rtab on" onclick="switchTab(this,'maids')">العاملات</button>
-      <button class="rtab" onclick="switchTab(this,'offices')">المكاتب</button>
+      <button class="rtab" onclick="switchTab(this,'maids')">العاملات</button>
+      <button class="rtab on" onclick="switchTab(this,'offices')">المكاتب</button>
+    </div>
+
+    <div id="officeFilterBanner" style="display:none;align-items:center;justify-content:space-between;background:var(--gold-l);border:1.5px solid rgba(201,168,76,.3);border-radius:10px;padding:10px 16px;margin-bottom:14px">
+      <span style="font-size:13px;font-weight:700;color:var(--gold-d)"></span>
+      <button onclick="clearOfficeFilter()" style="background:none;border:none;color:var(--gold-d);font-size:12px;font-weight:700;cursor:pointer;font-family:inherit">✕ عرض كل المكاتب</button>
     </div>
 
     <!-- MAIDS GRID -->
-    <div class="maids-grid" id="maidsGrid"></div>
+    <div class="maids-grid" id="maidsGrid" style="display:none"></div>
 
     <!-- OFFICES GRID -->
-    <div class="offices-grid" id="officesGrid" style="display:none"></div>
+    <div class="offices-grid" id="officesGrid"></div>
 
   </div>
 </div>
@@ -382,7 +387,7 @@ const _db = supabase.createClient(S_SUPABASE_URL, S_ANON_KEY);
 let maids = [];
 let offices = [];
 
-let currentTab = 'maids';
+let currentTab = 'offices';
 let qfNat = '';
 let selectedMaid = null;
 
@@ -421,6 +426,7 @@ async function loadData() {
       if (!r.office_id) return;
       if (!officeMap.has(r.office_id)) {
         officeMap.set(r.office_id, {
+          id: r.office_id,
           name: r.office_profiles?.office_name || 'مكتب استقدام',
           loc: [r.office_profiles?.emirate, r.office_profiles?.area].filter(Boolean).join(' — '),
           rating: r.office_profiles?.rating || 0,
@@ -432,6 +438,8 @@ async function loadData() {
       officeMap.get(r.office_id).maidsCount++;
     });
     offices = Array.from(officeMap.values());
+    // ترتيب المكاتب حسب التقييم (الأعلى تقييماً أولاً) — نفس منطق البحث العادي المطلوب
+    offices.sort((a, b) => (b.rating || 0) - (a.rating || 0));
 
     renderMaids(maids);
     renderOffices();
@@ -454,6 +462,8 @@ async function loadData() {
           if (c.value === preSkill) c.checked = true;
         });
       }
+      const maidsTabBtn = document.querySelector('.rtab[onclick*="maids"]');
+      if (maidsTabBtn) switchTab(maidsTabBtn, 'maids');
       filterAll();
     }
   } catch (e) {
@@ -521,10 +531,33 @@ function renderOffices() {
           <div class="ostat"><div class="ostat-num" style="color:var(--gold)">${o.rating || '—'}</div><div class="ostat-lbl">تقييم</div></div>
         </div>
         <div class="ocard-feats">${o.feats.map(f=>`<span class="ocard-feat">${f}</span>`).join('')}</div>
-        <button class="ocard-btn" onclick="alert('سيتم فتح صفحة المكتب')">عرض المكتب والعاملات</button>
+        <button class="ocard-btn" onclick="filterByOffice('${o.id}','${(o.name||'').replace(/'/g,"\\'")}')">عرض المكتب والعاملات</button>
       </div>
     </div>
   `).join('');
+}
+
+// عند اختيار مكتب من قائمة المكاتب: ننتقل لتبويب العاملات ونعرض فقط عاملات هذا المكتب
+let officeFilterId = '';
+function filterByOffice(officeId, officeName) {
+  officeFilterId = officeId;
+  const banner = document.getElementById('officeFilterBanner');
+  if (banner) {
+    banner.style.display = 'flex';
+    banner.querySelector('span').textContent = 'عاملات مكتب ' + officeName;
+  }
+  const maidsTabBtn = document.querySelector('.rtab[onclick*="maids"]');
+  if (maidsTabBtn) switchTab(maidsTabBtn, 'maids');
+  filterAll();
+}
+
+function clearOfficeFilter() {
+  officeFilterId = '';
+  const banner = document.getElementById('officeFilterBanner');
+  if (banner) banner.style.display = 'none';
+  const officesTabBtn = document.querySelector('.rtab[onclick*="offices"]');
+  if (officesTabBtn) switchTab(officesTabBtn, 'offices');
+  filterAll();
 }
 
 function filterAll() {
@@ -538,6 +571,7 @@ function filterAll() {
   const checkedSkills = [...document.querySelectorAll('.fp-check input[type=checkbox][value]')].filter(c => ['طبخ','رعاية أطفال','رعاية مسنين','تنظيف'].includes(c.value) && c.checked).map(c => c.value);
 
   let list = maids.filter(m => {
+    if (officeFilterId && String(m.officeId) !== String(officeFilterId)) return false;
     if (q && !m.name.includes(q) && !m.nat.includes(q) && !m.skills.some(s=>s.includes(q))) return false;
     if (em && m.emirate !== em) return false;
     if (nat && m.nat !== nat) return false;
@@ -686,7 +720,7 @@ function resetFilters() {
   document.querySelectorAll('.qf').forEach(q => q.classList.remove('on'));
   document.querySelector('.qf').classList.add('on');
   qfNat = '';
-  filterAll();
+  clearOfficeFilter();
 }
 
 // Init
