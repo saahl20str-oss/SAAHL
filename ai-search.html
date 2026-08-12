@@ -9,188 +9,123 @@
 :root{
   --gold:#C9A84C;--gold-d:#A8873A;--gold-l:#FBF3E0;
   --dark:#111;--text:#1A1A1A;--muted:#777;
-  --border:#E8E8E8;--bg:#F4F4F2;--white:#fff;--radius:16px;
+  --border:#E8E8E8;--bg:#F4F4F2;--white:#fff;--radius:14px;
 }
-body{font-family:'Segoe UI',Tahoma,Arial,sans-serif;background:var(--dark);color:var(--text);direction:rtl;min-height:100vh;display:flex;align-items:center;justify-content:center;position:relative;overflow:hidden;padding:20px}
-body::before{content:"";position:absolute;inset:0;background-image:linear-gradient(rgba(201,168,76,.04) 1px,transparent 1px),linear-gradient(90deg,rgba(201,168,76,.04) 1px,transparent 1px);background-size:50px 50px}
-.glow{position:absolute;width:500px;height:500px;background:radial-gradient(circle,rgba(201,168,76,.12) 0%,transparent 70%);top:-150px;right:-150px;border-radius:50%;filter:blur(60px)}
+body{font-family:'Segoe UI',Tahoma,Arial,sans-serif;background:var(--bg);color:var(--text);direction:rtl;min-height:100vh}
 
-.panel{position:relative;z-index:1;max-width:560px;width:100%;background:#fff;border-radius:var(--radius);padding:32px 28px;box-shadow:0 20px 60px rgba(0,0,0,.3)}
-.back{margin-bottom:18px}
-.back a{color:var(--muted);font-size:12.5px;text-decoration:none;font-weight:600}
+nav{background:#fff;border-bottom:2px solid var(--border);padding:0 5%;display:flex;align-items:center;justify-content:space-between;height:60px}
+.logo{display:flex;align-items:center;gap:8px;text-decoration:none}
+.logo-mark{width:32px;height:32px;border-radius:8px;background:var(--dark);color:var(--gold);display:flex;align-items:center;justify-content:center;font-weight:800;font-size:13px}
+.logo-name{font-size:16px;font-weight:800;color:var(--dark)}
+.logo-sub{font-size:9px;color:var(--muted);display:block;margin-top:-2px}
+.back-link{color:var(--muted);font-size:12.5px;text-decoration:none;font-weight:600}
+.back-link:hover{color:var(--gold-d)}
 
-.progress-bg{height:6px;background:#F0F0F0;border-radius:50px;margin-bottom:26px;overflow:hidden}
-.progress-fill{height:100%;background:var(--gold);border-radius:50px;transition:width .35s}
+.wrap{max-width:640px;margin:0 auto;padding:36px 20px}
+.head{text-align:center;margin-bottom:22px}
+.head-badge{display:inline-block;background:var(--dark);color:var(--gold);font-size:10px;font-weight:800;padding:4px 12px;border-radius:50px;margin-bottom:10px}
+.head h1{font-size:clamp(18px,3.2vw,24px);font-weight:800;color:var(--dark)}
+.head p{color:var(--muted);font-size:12.5px;margin-top:6px}
 
-.step-tag{font-size:11px;font-weight:800;color:var(--gold-d);background:var(--gold-l);display:inline-block;padding:4px 10px;border-radius:50px;margin-bottom:12px}
-.q-title{font-size:19px;font-weight:800;color:var(--dark);margin-bottom:22px;line-height:1.5}
+.panel{background:#fff;border-radius:var(--radius);border:1.5px solid var(--border);padding:22px 20px}
 
-.opt-grid{display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-bottom:26px}
-.opt{padding:16px 12px;border:1.5px solid var(--border);border-radius:12px;text-align:center;cursor:pointer;transition:all .2s;font-size:13.5px;font-weight:700;color:var(--dark)}
+.field{margin-bottom:18px}
+.field-label{font-size:12.5px;font-weight:800;color:var(--dark);margin-bottom:8px;display:block}
+.opt-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:8px}
+.opt-grid.two{grid-template-columns:repeat(2,1fr)}
+.opt{padding:10px 8px;border:1.5px solid var(--border);border-radius:9px;text-align:center;cursor:pointer;font-size:12px;font-weight:700;color:var(--dark);transition:all .15s}
 .opt:hover{border-color:var(--gold)}
 .opt.sel{background:var(--gold-l);border-color:var(--gold);color:var(--gold-d)}
-.opt-ico{font-size:22px;display:block;margin-bottom:6px}
 
-.nav-row{display:flex;gap:10px}
-.btn{flex:1;padding:13px;border-radius:10px;font-size:14px;font-weight:800;border:none;cursor:pointer;font-family:inherit}
-.btn-back{background:#fff;color:var(--muted);border:1.5px solid var(--border)}
-.btn-back:disabled{opacity:.4;cursor:not-allowed}
-.btn-next{background:var(--gold);color:#fff}
-.btn-next:disabled{opacity:.4;cursor:not-allowed}
-
-.result-box{display:none;text-align:center}
-.result-box.show{display:block}
-.result-ico{width:64px;height:64px;border-radius:50%;background:var(--gold-l);display:flex;align-items:center;justify-content:center;font-size:30px;margin:0 auto 16px}
-.result-title{font-size:19px;font-weight:800;color:var(--dark);margin-bottom:8px}
-.result-desc{font-size:13px;color:var(--muted);line-height:1.8;margin-bottom:22px}
-.summary-list{text-align:right;background:var(--bg);border-radius:12px;padding:14px 16px;margin-bottom:22px}
-.summary-list div{display:flex;justify-content:space-between;font-size:12.5px;padding:6px 0;border-bottom:1px solid #E8E8E8}
-.summary-list div:last-child{border-bottom:none}
-.summary-list span:first-child{color:var(--muted)}
-.summary-list span:last-child{font-weight:700;color:var(--dark)}
+.submit-btn{width:100%;padding:13px;background:var(--dark);color:var(--gold);border:none;border-radius:10px;font-size:14px;font-weight:800;cursor:pointer;font-family:inherit;margin-top:6px}
+.submit-btn:hover{opacity:.92}
 </style>
 </head>
 <body>
-<div class="glow"></div>
-<div class="panel">
-  <div class="back"><a href="search-choice.html">→ رجوع لاختيار طريقة البحث</a></div>
-  <div class="progress-bg"><div class="progress-fill" id="progressFill" style="width:20%"></div></div>
+<nav>
+  <a href="sponsor-dashboard.html" class="logo">
+    <div class="logo-mark">S</div>
+    <div><div class="logo-name">SAAHL</div><span class="logo-sub">منصة الاستقدام</span></div>
+  </a>
+  <a href="search-choice.html" class="back-link">→ رجوع لاختيار طريقة البحث</a>
+</nav>
 
-  <div id="steps"></div>
+<div class="wrap">
+  <div class="head">
+    <span class="head-badge">✦ البحث بالذكاء الاصطناعي</span>
+    <h1>حدّد احتياجك ونرشّح لك الأنسب</h1>
+    <p>اختر ما ينطبق عليك، وبعدها بنعرض لك العاملات والمكاتب المطابقة مباشرة</p>
+  </div>
 
-  <div class="result-box" id="resultBox">
-    <div class="result-ico">✦</div>
-    <div class="result-title">جاهز نرشّح لك الأنسب</div>
-    <div class="result-desc">بناءً على إجاباتك، هذا ملخص طلبك — بنعرض لك الآن العاملات والمكاتب المطابقة</div>
-    <div class="summary-list" id="summaryList"></div>
-    <button class="btn btn-next" style="width:100%" onclick="goToResults()">عرض الترشيحات</button>
+  <div class="panel">
+    <div class="field">
+      <span class="field-label">في أي إمارة تسكن؟</span>
+      <div class="opt-grid" id="fEmirate">
+        <div class="opt" data-v="أبوظبي">أبوظبي</div>
+        <div class="opt" data-v="دبي">دبي</div>
+        <div class="opt" data-v="الشارقة">الشارقة</div>
+        <div class="opt" data-v="عجمان">عجمان</div>
+        <div class="opt" data-v="أم القيوين">أم القيوين</div>
+        <div class="opt" data-v="رأس الخيمة">رأس الخيمة</div>
+      </div>
+    </div>
+
+    <div class="field">
+      <span class="field-label">نوع السكن</span>
+      <div class="opt-grid two" id="fHousing">
+        <div class="opt" data-v="شقة">شقة</div>
+        <div class="opt" data-v="فيلا">فيلا</div>
+      </div>
+    </div>
+
+    <div class="field">
+      <span class="field-label">عدد أفراد الأسرة تقريباً</span>
+      <div class="opt-grid" id="fFamily">
+        <div class="opt" data-v="1-2">1 – 2</div>
+        <div class="opt" data-v="3-4">3 – 4</div>
+        <div class="opt" data-v="5-6">5 – 6</div>
+      </div>
+    </div>
+
+    <div class="field">
+      <span class="field-label">هل يوجد كبار سن أو أصحاب همم يحتاجون رعاية؟</span>
+      <div class="opt-grid two" id="fElderly">
+        <div class="opt" data-v="yes">نعم</div>
+        <div class="opt" data-v="no">لا</div>
+      </div>
+    </div>
+
+    <button class="submit-btn" onclick="showResults()">عرض الترشيحات المطابقة</button>
   </div>
 </div>
 
 <script>
-const answers = { emirate: '', familySize: '', elderly: '', housing: '' };
+document.querySelectorAll('.opt-grid').forEach(grid => {
+  grid.addEventListener('click', e => {
+    const opt = e.target.closest('.opt');
+    if (!opt) return;
+    grid.querySelectorAll('.opt').forEach(o => o.classList.remove('sel'));
+    opt.classList.add('sel');
+  });
+});
 
-const questions = [
-  {
-    key: 'emirate',
-    tag: 'السؤال 1 من 4',
-    title: 'في أي إمارة تسكن؟',
-    options: [
-      { v: 'أبوظبي', ico: '🏙️', l: 'أبوظبي' },
-      { v: 'دبي', ico: '🌆', l: 'دبي' },
-      { v: 'الشارقة', ico: '🕌', l: 'الشارقة' },
-      { v: 'عجمان', ico: '🏘️', l: 'عجمان' },
-      { v: 'أم القيوين', ico: '🌊', l: 'أم القيوين' },
-      { v: 'رأس الخيمة', ico: '⛰️', l: 'رأس الخيمة' },
-    ]
-  },
-  {
-    key: 'housing',
-    tag: 'السؤال 2 من 4',
-    title: 'نوع السكن؟',
-    options: [
-      { v: 'شقة', ico: '🏢', l: 'شقة' },
-      { v: 'فيلا', ico: '🏡', l: 'فيلا' },
-    ]
-  },
-  {
-    key: 'familySize',
-    tag: 'السؤال 3 من 4',
-    title: 'كم عدد أفراد الأسرة تقريباً؟',
-    options: [
-      { v: '1-2', ico: '👤', l: '1 – 2' },
-      { v: '3-4', ico: '👥', l: '3 – 4' },
-      { v: '5-6', ico: '👨‍👩‍👧', l: '5 – 6' },
-      { v: '7+', ico: '👨‍👩‍👧‍👦', l: '7 فأكثر' },
-    ]
-  },
-  {
-    key: 'elderly',
-    tag: 'السؤال 4 من 4',
-    title: 'هل يوجد كبار سن أو أصحاب همم بالمنزل يحتاجون رعاية؟',
-    options: [
-      { v: 'yes', ico: '🧓', l: 'نعم' },
-      { v: 'no', ico: '🚫', l: 'لا' },
-    ]
-  },
-];
-
-let step = 0;
-
-function render() {
-  const stepsEl = document.getElementById('steps');
-  const resultBox = document.getElementById('resultBox');
-
-  if (step >= questions.length) {
-    stepsEl.style.display = 'none';
-    resultBox.classList.add('show');
-    buildSummary();
-    document.getElementById('progressFill').style.width = '100%';
-    return;
-  }
-
-  stepsEl.style.display = 'block';
-  resultBox.classList.remove('show');
-
-  const q = questions[step];
-  document.getElementById('progressFill').style.width = ((step + 1) / (questions.length + 1) * 100) + '%';
-
-  stepsEl.innerHTML = `
-    <div class="step-tag">${q.tag}</div>
-    <div class="q-title">${q.title}</div>
-    <div class="opt-grid">
-      ${q.options.map(o => `
-        <div class="opt ${answers[q.key] === o.v ? 'sel' : ''}" onclick="selectOption('${q.key}','${o.v}')">
-          <span class="opt-ico">${o.ico}</span>${o.l}
-        </div>
-      `).join('')}
-    </div>
-    <div class="nav-row">
-      <button class="btn btn-back" onclick="prevStep()" ${step === 0 ? 'disabled' : ''}>السابق</button>
-      <button class="btn btn-next" id="nextBtn" onclick="nextStep()" ${answers[q.key] ? '' : 'disabled'}>التالي</button>
-    </div>
-  `;
+function getSelected(gridId) {
+  const el = document.querySelector('#' + gridId + ' .opt.sel');
+  return el ? el.dataset.v : '';
 }
 
-function selectOption(key, val) {
-  answers[key] = val;
-  render();
-}
-
-function nextStep() {
-  const q = questions[step];
-  if (!answers[q.key]) return;
-  step++;
-  render();
-}
-
-function prevStep() {
-  if (step > 0) { step--; render(); }
-}
-
-function buildSummary() {
-  const rows = [
-    ['الإمارة', answers.emirate],
-    ['نوع السكن', answers.housing],
-    ['عدد أفراد الأسرة', answers.familySize],
-    ['رعاية كبار سن / أصحاب همم', answers.elderly === 'yes' ? 'نعم' : 'لا'],
-  ];
-  document.getElementById('summaryList').innerHTML = rows.map(r =>
-    `<div><span>${r[0]}</span><span>${r[1]}</span></div>`
-  ).join('');
-}
-
-function goToResults() {
+function showResults() {
   // الترشيح الحالي: نطبّق فلتر الإمارة + مهارة "رعاية مسنين" لو محتاجين رعاية كبار سن
   // TODO (مرحلة لاحقة): ترشيح أذكى فعلياً (مطابقة نوع السكن وعدد الأسرة بمهارات
   // العاملة وخبرتها) يحتاج حقول إضافية غير موجودة حالياً بجدول maids
+  const emirate = getSelected('fEmirate');
+  const elderly = getSelected('fElderly');
+
   const params = new URLSearchParams();
-  if (answers.emirate) params.set('emirate', answers.emirate);
-  if (answers.elderly === 'yes') params.set('skill', 'رعاية مسنين');
+  if (emirate) params.set('emirate', emirate);
+  if (elderly === 'yes') params.set('skill', 'رعاية مسنين');
   window.location.href = 'search.html?' + params.toString();
 }
-
-render();
 </script>
 </body>
 </html>
