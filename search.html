@@ -443,6 +443,19 @@ async function loadData() {
       const found = maids.find(m => String(m.id) === targetMaidId);
       if (found) openDetail(targetMaidId);
     }
+
+    // فلترة مبدئية قادمة من صفحة البحث بالذكاء الاصطناعي (ai-search.html)
+    const preEmirate = params.get('emirate');
+    const preSkill = params.get('skill');
+    if (preEmirate || preSkill) {
+      if (preEmirate) document.getElementById('fEmirate').value = preEmirate;
+      if (preSkill) {
+        document.querySelectorAll('.fp-check input[type=checkbox][value]').forEach(c => {
+          if (c.value === preSkill) c.checked = true;
+        });
+      }
+      filterAll();
+    }
   } catch (e) {
     console.error('loadData:', e);
     grid.innerHTML = '<div style="grid-column:1/-1;text-align:center;padding:60px 20px;color:#E53E3E">تعذّر تحميل العاملات، حاول تحديث الصفحة</div>';
