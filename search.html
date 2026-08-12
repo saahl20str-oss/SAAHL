@@ -599,10 +599,78 @@ function closeDetail(e) {
   }
 }
 
-function bookMaid() {
+async function bookMaid() {
   if (!selectedMaid || selectedMaid.status !== 'available') return;
-  document.getElementById('detailContent').style.display = 'none';
-  document.getElementById('bookSuccess').classList.add('show');
+  const m = selectedMaid;
+  const btn = document.getElementById('dp-book-btn');
+  const originalText = btn.textContent;
+  btn.disabled = true;
+  btn.textContent = 'جاري الحجز...';
+
+  try {
+    const { data: { user } } = await _db.auth.getUser();
+    if (!user) {
+      alert('يجب تسجيل الدخول كحساب كفيل أولاً لإتمام الحجز');
+      window.location.href = 'login.html';
+      return;
+    }
+
+    const bookingType = m.type === 'abroad' ? 'ABROAD' : 'LOCAL';
+    const reservationExpiry = new Date(Date.now() + 3 * 60 * 60 * 1000).toISOString();
+
+    // قفل تفاؤلي: نحدّث حالة العاملة لـ BOOKED بشرط أنها لسا AVAILABLE فعلياً بقاعدة البيانات
+    // هذا يمنع حجز نفس العاملة مرتين بنفس اللحظة من شخصين مختلفين
+    const { data: updatedMaid, error: maidErr } = await _db
+      .from('maids')
+      .update({ status: 'BOOKED' })
+      .eq('id', m.id)
+      .eq('status', 'AVAILABLE')
+      .select()
+      .maybeSingle();
+
+    if (maidErr) throw maidErr;
+    if (!updatedMaid) {
+      alert('عذراً، تم حجز هذه العاملة للتو من كفيل آخر');
+      m.status = 'booked';
+      renderMaids(maids);
+      closeDetail();
+      return;
+    }
+
+    const { data: booking, error: bookErr } = await _db
+      .from('bookings')
+      .insert({
+        sponsor_id: user.id,
+        maid_id: m.id,
+        office_id: m.officeId,
+        booking_type: bookingType,
+        status: 'RESERVED',
+        reservation_expiry: reservationExpiry
+      })
+      .select()
+      .single();
+
+    if (bookErr) {
+      // فشل إنشاء الحجز -> نتراجع ونرجع العاملة AVAILABLE عشان ما تضيع من السوق بدون سبب
+      await _db.from('maids').update({ status: 'AVAILABLE' }).eq('id', m.id);
+      throw bookErr;
+    }
+
+    // TODO (مهمة لاحقة): إشعار حقيقي للمكتب بجدول notifications — يحتاج تأكيد أسماء الأعمدة
+    // الفعلية بالجدول أولاً (نفس النمط: لا نخمن، نفحص الجدول قبل الكتابة فيه)
+
+    m.status = 'booked';
+    renderMaids(maids);
+    document.getElementById('detailContent').style.display = 'none';
+    document.getElementById('bookSuccess').classList.add('show');
+
+  } catch (e) {
+    console.error('bookMaid:', e);
+    alert('تعذّر إتمام الحجز: ' + (e.message || 'خطأ غير متوقع، حاول مرة أخرى'));
+  } finally {
+    btn.disabled = false;
+    btn.textContent = originalText;
+  }
 }
 
 function resetFilters() {
