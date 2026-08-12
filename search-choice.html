@@ -1,4 +1,4 @@
-<!DOCTYPE html> 
+<!DOCTYPE html>
 <html lang="ar" dir="rtl">
 <head>
 <meta charset="UTF-8">
@@ -9,44 +9,52 @@
 :root{
   --gold:#C9A84C;--gold-d:#A8873A;--gold-l:#FBF3E0;
   --dark:#111;--text:#1A1A1A;--muted:#777;
-  --border:#E8E8E8;--bg:#F4F4F2;--white:#fff;--radius:16px;
+  --border:#E8E8E8;--bg:#F4F4F2;--white:#fff;--radius:14px;
 }
-body{font-family:'Segoe UI',Tahoma,Arial,sans-serif;background:var(--dark);color:var(--text);direction:rtl;min-height:100vh;display:flex;align-items:center;justify-content:center;position:relative;overflow:hidden}
-body::before{content:"";position:absolute;inset:0;background-image:linear-gradient(rgba(201,168,76,.04) 1px,transparent 1px),linear-gradient(90deg,rgba(201,168,76,.04) 1px,transparent 1px);background-size:50px 50px}
-.glow{position:absolute;width:500px;height:500px;background:radial-gradient(circle,rgba(201,168,76,.12) 0%,transparent 70%);top:-150px;right:-150px;border-radius:50%;filter:blur(60px)}
+body{font-family:'Segoe UI',Tahoma,Arial,sans-serif;background:var(--bg);color:var(--text);direction:rtl;min-height:100vh}
 
-.wrap{position:relative;z-index:1;max-width:820px;width:92%;padding:20px}
-.back{position:absolute;top:24px;left:24px}
-.back a{color:rgba(255,255,255,.5);font-size:13px;text-decoration:none;font-weight:600}
-.back a:hover{color:var(--gold)}
+/* NAV — نفس شكل باقي صفحات الموقع */
+nav{background:#fff;border-bottom:2px solid var(--border);padding:0 5%;display:flex;align-items:center;justify-content:space-between;height:60px}
+.logo{display:flex;align-items:center;gap:8px;text-decoration:none}
+.logo-mark{width:32px;height:32px;border-radius:8px;background:var(--dark);color:var(--gold);display:flex;align-items:center;justify-content:center;font-weight:800;font-size:13px}
+.logo-name{font-size:16px;font-weight:800;color:var(--dark)}
+.logo-sub{font-size:9px;color:var(--muted);display:block;margin-top:-2px}
+.back-link{color:var(--muted);font-size:12.5px;text-decoration:none;font-weight:600}
+.back-link:hover{color:var(--gold-d)}
 
-.head{text-align:center;margin-bottom:40px}
-.head h1{color:#fff;font-size:clamp(22px,4vw,32px);font-weight:800;margin-bottom:10px}
-.head h1 span{color:var(--gold)}
-.head p{color:rgba(255,255,255,.5);font-size:14px}
+.wrap{max-width:720px;margin:0 auto;padding:44px 20px}
 
-.cards{display:grid;grid-template-columns:1fr 1fr;gap:20px}
-@media(max-width:680px){.cards{grid-template-columns:1fr}}
+.head{text-align:center;margin-bottom:30px}
+.head h1{font-size:clamp(19px,3.4vw,26px);font-weight:800;color:var(--dark);margin-bottom:6px}
+.head h1 span{color:var(--gold-d)}
+.head p{color:var(--muted);font-size:13px}
 
-.card{background:#fff;border-radius:var(--radius);padding:32px 26px;text-align:center;text-decoration:none;color:var(--text);border:1.5px solid transparent;transition:all .25s;display:flex;flex-direction:column;align-items:center}
-.card:hover{transform:translateY(-4px);border-color:var(--gold);box-shadow:0 16px 40px rgba(0,0,0,.25)}
-.card-ico{width:64px;height:64px;border-radius:18px;background:var(--gold-l);display:flex;align-items:center;justify-content:center;font-size:30px;margin-bottom:18px}
-.card.ai .card-ico{background:linear-gradient(135deg,#1a1a1a,#333)}
-.card-title{font-size:18px;font-weight:800;color:var(--dark);margin-bottom:8px}
-.card-badge{display:inline-block;background:var(--gold-l);color:var(--gold-d);font-size:10px;font-weight:800;padding:3px 10px;border-radius:50px;margin-bottom:12px}
-.card.ai .card-badge{background:#111;color:var(--gold)}
-.card-desc{font-size:13px;color:var(--muted);line-height:1.8;margin-bottom:20px}
-.card-list{list-style:none;text-align:right;width:100%;margin-bottom:22px}
-.card-list li{font-size:12.5px;color:#444;padding:6px 0 6px 0;border-bottom:1px solid #F5F5F5;display:flex;align-items:center;gap:8px}
-.card-list li:last-child{border-bottom:none}
+.cards{display:grid;grid-template-columns:1fr 1fr;gap:14px}
+@media(max-width:600px){.cards{grid-template-columns:1fr}}
+
+.card{background:#fff;border-radius:var(--radius);padding:20px 18px;text-decoration:none;color:var(--text);border:1.5px solid var(--border);transition:all .2s;display:flex;flex-direction:column}
+.card:hover{border-color:var(--gold);box-shadow:0 8px 24px rgba(0,0,0,.08)}
+.card-top{display:flex;align-items:center;gap:10px;margin-bottom:10px}
+.card-ico{width:38px;height:38px;border-radius:10px;background:var(--gold-l);display:flex;align-items:center;justify-content:center;font-size:17px;flex-shrink:0}
+.card.ai .card-ico{background:var(--dark);color:var(--gold)}
+.card-title{font-size:15px;font-weight:800;color:var(--dark)}
+.card-badge{font-size:10px;font-weight:700;color:var(--gold-d)}
+.card-desc{font-size:12px;color:var(--muted);line-height:1.6;margin-bottom:12px}
+.card-list{list-style:none;margin-bottom:14px}
+.card-list li{font-size:11.5px;color:#444;padding:3px 0;display:flex;align-items:center;gap:6px}
 .card-list li::before{content:"✓";color:var(--gold);font-weight:800;flex-shrink:0}
-.card-btn{margin-top:auto;width:100%;padding:13px;background:var(--gold);color:#fff;border-radius:10px;font-size:14px;font-weight:800}
-.card.ai .card-btn{background:#111}
+.card-btn{margin-top:auto;padding:9px;background:var(--gold);color:#fff;border-radius:8px;font-size:12.5px;font-weight:800;text-align:center}
+.card.ai .card-btn{background:var(--dark)}
 </style>
 </head>
 <body>
-<div class="glow"></div>
-<div class="back"><a href="sponsor-dashboard.html">→ الرجوع للوحة التحكم</a></div>
+<nav>
+  <a href="sponsor-dashboard.html" class="logo">
+    <div class="logo-mark">S</div>
+    <div><div class="logo-name">SAAHL</div><span class="logo-sub">منصة الاستقدام</span></div>
+  </a>
+  <a href="sponsor-dashboard.html" class="back-link">→ لوحة التحكم</a>
+</nav>
 
 <div class="wrap">
   <div class="head">
@@ -56,10 +64,11 @@ body::before{content:"";position:absolute;inset:0;background-image:linear-gradie
 
   <div class="cards">
     <a href="search.html" class="card">
-      <div class="card-ico">🔍</div>
-      <span class="card-badge">البحث العادي</span>
-      <div class="card-title">أبحث بنفسي</div>
-      <div class="card-desc">تصفّح كل العاملات المتاحة، وصفّي النتائج حسب ما يناسبك</div>
+      <div class="card-top">
+        <div class="card-ico">🔍</div>
+        <div><div class="card-title">أبحث بنفسي</div><span class="card-badge">البحث العادي</span></div>
+      </div>
+      <div class="card-desc">تصفّح المكاتب المعتمدة وعاملاتها، وصفّي النتائج حسب ما يناسبك</div>
       <ul class="card-list">
         <li>فلترة حسب الإمارة والجنسية</li>
         <li>فلترة حسب الخبرة والراتب</li>
@@ -69,13 +78,14 @@ body::before{content:"";position:absolute;inset:0;background-image:linear-gradie
     </a>
 
     <a href="ai-search.html" class="card ai">
-      <div class="card-ico">✦</div>
-      <span class="card-badge">بالذكاء الاصطناعي</span>
-      <div class="card-title">رشّح لي الأنسب</div>
-      <div class="card-desc">جاوب على كم سؤال بسيط ونرشّح لك أفضل العاملات المطابقة لاحتياجك</div>
+      <div class="card-top">
+        <div class="card-ico">✦</div>
+        <div><div class="card-title">رشّح لي الأنسب</div><span class="card-badge">بالذكاء الاصطناعي</span></div>
+      </div>
+      <div class="card-desc">حدّد احتياجك بفلتر سريع ونرشّح لك أفضل العاملات المطابقة</div>
       <ul class="card-list">
-        <li>أسئلة سريعة عن بيت واحتياجك</li>
-        <li>ترشيح تلقائي حسب إجاباتك</li>
+        <li>فلتر واحد سريع لاحتياجك</li>
+        <li>ترشيح تلقائي حسب اختياراتك</li>
         <li>نفس خطوات الحجز والمتابعة</li>
       </ul>
       <div class="card-btn">ابدأ البحث الذكي</div>
