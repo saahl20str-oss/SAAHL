@@ -225,7 +225,7 @@ select.m-inp{background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w
     <div class="sb-user">
       <div class="sb-avatar">م</div>
       <div>
-        <div class="sb-user-name">محمد خالد الشامسي</div>
+        <div class="sb-user-name">...</div>
         <div class="sb-user-tag">كفيل — أبوظبي</div>
       </div>
     </div>
@@ -238,15 +238,14 @@ select.m-inp{background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w
     </a>
     <a class="ni" onclick="showPg('bookings',this)">
       <div class="ni-ico">📋</div><span class="ni-lbl">حجوزاتي</span>
-      <span class="ni-badge">3</span>
+      <span class="ni-badge" id="navBadgeBookings" style="display:none">0</span>
     </a>
     <a class="ni" onclick="showPg('abroad',this)">
       <div class="ni-ico">✈</div><span class="ni-lbl">استقدام من الخارج</span>
-      <span class="ni-badge">1</span>
+      <span class="ni-badge" id="navBadgeAbroad" style="display:none">0</span>
     </a>
     <a class="ni" onclick="showPg('messages',this)">
       <div class="ni-ico">💬</div><span class="ni-lbl">الرسائل</span>
-      <span class="ni-badge">2</span>
     </a>
     <a class="ni" onclick="showPg('contracts',this)">
       <div class="ni-ico">📄</div><span class="ni-lbl">عقودي</span>
@@ -287,14 +286,7 @@ select.m-inp{background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w
             <span style="font-size:13px;font-weight:800;color:var(--dark)">الإشعارات</span>
             <button onclick="document.getElementById('notifPanel').classList.remove('open')" style="border:none;background:none;color:var(--muted);cursor:pointer;font-size:12px;font-weight:700">إغلاق</button>
           </div>
-          <div style="background:#FDFBF6;display:flex;gap:12px;padding:13px 18px;border-bottom:1px solid #F5F5F5">
-            <div style="width:36px;height:36px;border-radius:10px;background:var(--gold-l);display:flex;align-items:center;justify-content:center;font-size:16px;flex-shrink:0">📋</div>
-            <div><div style="font-size:12px;color:var(--dark);font-weight:600;line-height:1.5;margin-bottom:3px">تم قبول حجزك لـ فاطمة أحمد من مكتب الأمانة</div><div style="font-size:10px;color:var(--muted)">منذ 10 دقائق</div></div>
-          </div>
-          <div style="display:flex;gap:12px;padding:13px 18px;border-bottom:1px solid #F5F5F5">
-            <div style="width:36px;height:36px;border-radius:10px;background:var(--gold-l);display:flex;align-items:center;justify-content:center;font-size:16px;flex-shrink:0">💬</div>
-            <div><div style="font-size:12px;color:var(--dark);font-weight:600;line-height:1.5;margin-bottom:3px">رسالة جديدة من مكتب الأمانة</div><div style="font-size:10px;color:var(--muted)">منذ ساعة</div></div>
-          </div>
+          <div id="notifList" style="max-height:320px;overflow-y:auto"></div>
         </div>
       </div>
       <button class="search-btn" onclick="window.location.href='search.html'">
@@ -311,19 +303,19 @@ select.m-inp{background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w
       <div class="stats-row">
         <div class="sc">
           <div class="sc-top"><div class="sc-ico g">📋</div></div>
-          <div class="sc-num">3</div><div class="sc-lbl">حجوزات نشطة</div>
+          <div class="sc-num">0</div><div class="sc-lbl">حجوزات نشطة</div>
         </div>
         <div class="sc">
           <div class="sc-top"><div class="sc-ico b">✈</div></div>
-          <div class="sc-num">1</div><div class="sc-lbl">استقدام قيد التنفيذ</div>
+          <div class="sc-num">0</div><div class="sc-lbl">استقدام قيد التنفيذ</div>
         </div>
         <div class="sc">
           <div class="sc-top"><div class="sc-ico gr">✅</div></div>
-          <div class="sc-num">5</div><div class="sc-lbl">حجوزات مكتملة</div>
+          <div class="sc-num">0</div><div class="sc-lbl">حجوزات مكتملة</div>
         </div>
         <div class="sc">
           <div class="sc-top"><div class="sc-ico o">💰</div></div>
-          <div class="sc-num">1,850</div><div class="sc-lbl">إجمالي المدفوع (د.إ)</div>
+          <div class="sc-num">0</div><div class="sc-lbl">إجمالي المدفوع (د.إ)</div>
         </div>
       </div>
 
@@ -399,31 +391,18 @@ select.m-inp{background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w
         <div style="display:flex;flex-direction:column;gap:16px">
           <div class="wcard">
             <div class="wcard-hd"><span class="wcard-title">ملخص سريع</span></div>
-            <div class="ql">
-              <div class="qi"><span class="qi-lbl">الحجوزات المبدئية</span><span class="qi-val">1</span></div>
-              <div class="qi"><span class="qi-lbl">في فترة التجربة</span><span class="qi-val">1</span></div>
-              <div class="qi"><span class="qi-lbl">استقدام من الخارج</span><span class="qi-val gold">1</span></div>
-              <div class="qi"><span class="qi-lbl">مكتمل هذا العام</span><span class="qi-val">5</span></div>
-              <div class="qi"><span class="qi-lbl">إجمالي المدفوع</span><span class="qi-val gold">1,850 د.إ</span></div>
+            <div class="ql" id="qsList">
+              <div class="qi"><span class="qi-lbl">الحجوزات المبدئية</span><span class="qi-val" id="qsReserved">0</span></div>
+              <div class="qi"><span class="qi-lbl">في فترة التجربة</span><span class="qi-val" id="qsTrial">0</span></div>
+              <div class="qi"><span class="qi-lbl">استقدام من الخارج</span><span class="qi-val gold" id="qsAbroad">0</span></div>
+              <div class="qi"><span class="qi-lbl">مكتمل هذا العام</span><span class="qi-val" id="qsCompleted">0</span></div>
+              <div class="qi"><span class="qi-lbl">إجمالي المدفوع</span><span class="qi-val gold" id="qsTotalPaid">0 د.إ</span></div>
             </div>
           </div>
           <div class="wcard">
             <div class="wcard-hd"><span class="wcard-title">المكاتب المتفاعلة</span></div>
-            <div class="office-card">
-              <div class="office-avatar">أ</div>
-              <div style="flex:1">
-                <div class="office-name">مكتب الأمانة</div>
-                <div class="office-det">أبوظبي — الخالدية</div>
-              </div>
-              <div class="office-rating">4.8 ★</div>
-            </div>
-            <div class="office-card">
-              <div class="office-avatar">ن</div>
-              <div style="flex:1">
-                <div class="office-name">مكتب النور</div>
-                <div class="office-det">دبي — ديرة</div>
-              </div>
-              <div class="office-rating">4.6 ★</div>
+            <div id="officesList">
+              <div style="padding:16px;text-align:center;color:var(--muted,#888);font-size:12px">لا يوجد تفاعل مع مكاتب بعد</div>
             </div>
           </div>
         </div>
@@ -515,45 +494,8 @@ select.m-inp{background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w
         <div class="wcard-hd">
           <span class="wcard-title">الاستقدام من الخارج</span>
         </div>
-        <div style="padding:16px">
-          <div class="abroad-card">
-            <div class="abroad-top">
-              <div>
-                <div class="abroad-maid-name">نور حسين</div>
-                <div class="abroad-maid-det">سريلانكية — مكتب الأمانة — أبوظبي</div>
-              </div>
-              <div style="text-align:center">
-                <div class="abroad-days-big" id="abroadDays">18</div>
-                <div class="abroad-days-lbl">يوم متبقي</div>
-              </div>
-            </div>
-            <div class="abroad-progress">
-              <div class="abroad-bar-bg">
-                <div class="abroad-bar-fill" style="width:55%"></div>
-              </div>
-              <div class="abroad-dates">
-                <span>تاريخ الطلب: 1 مايو 2026</span>
-                <span>وصول متوقع: 12 يونيو 2026</span>
-              </div>
-            </div>
-          </div>
-
-          <div class="wcard" style="border:1.5px solid var(--border);box-shadow:none">
-            <div class="wcard-hd"><span class="wcard-title">تفاصيل الطلب</span></div>
-            <div class="ql">
-              <div class="qi"><span class="qi-lbl">اسم العاملة</span><span class="qi-val">نور حسين</span></div>
-              <div class="qi"><span class="qi-lbl">الجنسية</span><span class="qi-val">سريلانكية</span></div>
-              <div class="qi"><span class="qi-lbl">المكتب</span><span class="qi-val">مكتب الأمانة</span></div>
-              <div class="qi"><span class="qi-lbl">الراتب الشهري</span><span class="qi-val gold">1,050 د.إ</span></div>
-              <div class="qi"><span class="qi-lbl">رسوم الاستقدام المدفوعة</span><span class="qi-val gold">4,500 د.إ</span></div>
-              <div class="qi"><span class="qi-lbl">تاريخ الطلب</span><span class="qi-val">1 مايو 2026</span></div>
-              <div class="qi"><span class="qi-lbl">وصول متوقع</span><span class="qi-val">12 يونيو 2026</span></div>
-              <div class="qi"><span class="qi-lbl">حالة التأشيرة</span><span class="qi-val" style="color:#2B6CB0">قيد المعالجة</span></div>
-            </div>
-            <div style="padding:14px 20px">
-              <button class="act-btn dark" style="width:100%;justify-content:center" onclick="openModal('chatModal')">التواصل مع المكتب لمتابعة الإجراءات</button>
-            </div>
-          </div>
+        <div style="padding:16px" id="abroadContent">
+          <div style="text-align:center;padding:40px 20px;color:var(--muted,#888)">لا توجد طلبات استقدام من الخارج بعد</div>
         </div>
       </div>
     </div>
@@ -576,27 +518,8 @@ select.m-inp{background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w
     <div class="pg" id="pg-contracts">
       <div class="wcard">
         <div class="wcard-hd"><span class="wcard-title">عقودي</span></div>
-        <div style="padding:16px;display:flex;flex-direction:column;gap:10px">
-          <div style="display:flex;align-items:center;justify-content:space-between;padding:14px 16px;background:var(--bg);border-radius:10px;border:1.5px solid var(--border)">
-            <div style="display:flex;align-items:center;gap:12px">
-              <div style="width:38px;height:38px;border-radius:10px;background:var(--gold-l);display:flex;align-items:center;justify-content:center;font-size:16px">📄</div>
-              <div>
-                <div style="font-size:13px;font-weight:700;color:var(--dark)">عقد فترة التجربة — سيتي رحمة</div>
-                <div style="font-size:11px;color:var(--muted)">SAAHL-2026-83421 — 22 مايو 2026</div>
-              </div>
-            </div>
-            <a href="contracts.html" style="padding:7px 14px;background:var(--gold-l);color:var(--gold-d);border-radius:8px;font-size:12px;font-weight:700;text-decoration:none">عرض</a>
-          </div>
-          <div style="display:flex;align-items:center;justify-content:space-between;padding:14px 16px;background:var(--bg);border-radius:10px;border:1.5px solid var(--border)">
-            <div style="display:flex;align-items:center;gap:12px">
-              <div style="width:38px;height:38px;border-radius:10px;background:#F0FFF4;display:flex;align-items:center;justify-content:center;font-size:16px">✅</div>
-              <div>
-                <div style="font-size:13px;font-weight:700;color:var(--dark)">عقد استقدام كامل — مريم جوزيف</div>
-                <div style="font-size:11px;color:var(--muted)">SAAHL-2026-71203 — 10 أبريل 2026</div>
-              </div>
-            </div>
-            <a href="contracts.html" style="padding:7px 14px;background:var(--gold-l);color:var(--gold-d);border-radius:8px;font-size:12px;font-weight:700;text-decoration:none">عرض</a>
-          </div>
+        <div style="padding:16px;display:flex;flex-direction:column;gap:10px" id="contractsList">
+          <div style="text-align:center;padding:24px 20px;color:var(--muted,#888)">لا توجد عقود بعد</div>
         </div>
       </div>
     </div>
@@ -607,14 +530,14 @@ select.m-inp{background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w
         <div class="wcard-hd"><span class="wcard-title">ملفي الشخصي</span></div>
         <div style="padding:24px">
           <div style="display:grid;grid-template-columns:1fr 1fr;gap:14px;margin-bottom:14px">
-            <div><label style="font-size:11px;font-weight:700;color:#555;text-transform:uppercase;letter-spacing:.3px;display:block;margin-bottom:5px">الاسم الكامل</label><input style="width:100%;padding:10px 13px;border:1.5px solid var(--border);border-radius:9px;font-size:13px;font-family:inherit;outline:none" value="محمد خالد الشامسي"></div>
-            <div><label style="font-size:11px;font-weight:700;color:#555;text-transform:uppercase;letter-spacing:.3px;display:block;margin-bottom:5px">رقم الهوية</label><input style="width:100%;padding:10px 13px;border:1.5px solid var(--border);border-radius:9px;font-size:13px;font-family:inherit;outline:none" value="784-1985-1234567-1" readonly style="background:#f9f9f9;color:#999"></div>
-            <div><label style="font-size:11px;font-weight:700;color:#555;text-transform:uppercase;letter-spacing:.3px;display:block;margin-bottom:5px">رقم الجوال</label><input style="width:100%;padding:10px 13px;border:1.5px solid var(--border);border-radius:9px;font-size:13px;font-family:inherit;outline:none" value="+971 50 123 4567"></div>
-            <div><label style="font-size:11px;font-weight:700;color:#555;text-transform:uppercase;letter-spacing:.3px;display:block;margin-bottom:5px">الإمارة</label><input style="width:100%;padding:10px 13px;border:1.5px solid var(--border);border-radius:9px;font-size:13px;font-family:inherit;outline:none" value="أبوظبي"></div>
-            <div><label style="font-size:11px;font-weight:700;color:#555;text-transform:uppercase;letter-spacing:.3px;display:block;margin-bottom:5px">IBAN</label><input style="width:100%;padding:10px 13px;border:1.5px solid var(--border);border-radius:9px;font-size:13px;font-family:inherit;outline:none" placeholder="AE07 0331 2345 6789..."></div>
-            <div><label style="font-size:11px;font-weight:700;color:#555;text-transform:uppercase;letter-spacing:.3px;display:block;margin-bottom:5px">البريد الإلكتروني</label><input style="width:100%;padding:10px 13px;border:1.5px solid var(--border);border-radius:9px;font-size:13px;font-family:inherit;outline:none" value="m.shamsi@email.com"></div>
+            <div><label style="font-size:11px;font-weight:700;color:#555;text-transform:uppercase;letter-spacing:.3px;display:block;margin-bottom:5px">الاسم الكامل</label><input id="pfFullName" style="width:100%;padding:10px 13px;border:1.5px solid var(--border);border-radius:9px;font-size:13px;font-family:inherit;outline:none" value=""></div>
+            <div><label style="font-size:11px;font-weight:700;color:#555;text-transform:uppercase;letter-spacing:.3px;display:block;margin-bottom:5px">رقم الهوية</label><input id="pfEmiratesId" style="width:100%;padding:10px 13px;border:1.5px solid var(--border);border-radius:9px;font-size:13px;font-family:inherit;outline:none;background:#f9f9f9;color:#999" value="" readonly></div>
+            <div><label style="font-size:11px;font-weight:700;color:#555;text-transform:uppercase;letter-spacing:.3px;display:block;margin-bottom:5px">رقم الجوال</label><input id="pfPhone" style="width:100%;padding:10px 13px;border:1.5px solid var(--border);border-radius:9px;font-size:13px;font-family:inherit;outline:none" value=""></div>
+            <div><label style="font-size:11px;font-weight:700;color:#555;text-transform:uppercase;letter-spacing:.3px;display:block;margin-bottom:5px">الإمارة</label><input id="pfEmirate" style="width:100%;padding:10px 13px;border:1.5px solid var(--border);border-radius:9px;font-size:13px;font-family:inherit;outline:none" value=""></div>
+            <div><label style="font-size:11px;font-weight:700;color:#555;text-transform:uppercase;letter-spacing:.3px;display:block;margin-bottom:5px">IBAN</label><input id="pfIban" style="width:100%;padding:10px 13px;border:1.5px solid var(--border);border-radius:9px;font-size:13px;font-family:inherit;outline:none" placeholder="AE07 0331 2345 6789..." value=""></div>
+            <div><label style="font-size:11px;font-weight:700;color:#555;text-transform:uppercase;letter-spacing:.3px;display:block;margin-bottom:5px">البريد الإلكتروني</label><input id="pfEmail" style="width:100%;padding:10px 13px;border:1.5px solid var(--border);border-radius:9px;font-size:13px;font-family:inherit;outline:none;background:#f9f9f9;color:#999" value="" readonly></div>
           </div>
-          <button style="padding:11px 24px;background:var(--gold);color:#fff;border:none;border-radius:10px;font-size:13px;font-weight:700;cursor:pointer;font-family:inherit" onclick="alert('تم حفظ التغييرات')">حفظ التغييرات</button>
+          <button style="padding:11px 24px;background:var(--gold);color:#fff;border:none;border-radius:10px;font-size:13px;font-weight:700;cursor:pointer;font-family:inherit" onclick="saveProfile()">حفظ التغييرات</button>
         </div>
       </div>
     </div>
@@ -942,53 +865,169 @@ async function initSponsorDashboard() {
       console.warn('لا يوجد ملف شخصي (sponsor_profiles) لهذا الحساب بعد — يحتاج إكمال التسجيل');
     }
 
+    fillProfileFields(sponsor, profile, user);
     await loadSponsorBookings();
-    await loadSponsorContracts();
+    await loadNotifications();
 
   } catch(e) { console.error('initSponsor:', e); }
+}
+
+function fillProfileFields(sponsor, profile, user) {
+  const set = (id, val) => { const el = document.getElementById(id); if (el) el.value = val || ''; };
+  set('pfFullName', sponsor?.full_name || profile?.full_name || '');
+  set('pfEmiratesId', sponsor?.emirates_id || '');
+  set('pfPhone', sponsor?.mobile || sponsor?.phone || '');
+  set('pfEmirate', sponsor?.emirate || '');
+  set('pfIban', sponsor?.iban || '');
+  set('pfEmail', sponsor?.email || user?.email || '');
+}
+
+async function saveProfile() {
+  if (!_user) return;
+  const val = id => document.getElementById(id)?.value?.trim() || null;
+  const payload = {
+    id: _user.id,
+    full_name: val('pfFullName'),
+    mobile: val('pfPhone'),
+    emirate: val('pfEmirate'),
+    iban: val('pfIban')
+  };
+  const { error } = await _db.from('sponsor_profiles').upsert(payload, { onConflict: 'id' });
+  if (error) { alert('تعذر حفظ التغييرات: ' + error.message); return; }
+  alert('تم حفظ التغييرات');
 }
 
 async function loadSponsorBookings() {
   if (!_user) return;
   const { data: bookings, error } = await _db
     .from('bookings')
-    .select(`*, maids(full_name, nationality, monthly_salary), office_profiles(office_name, whatsapp)`)
+    .select(`*, maids(full_name, nationality, monthly_salary), office_profiles(office_name, whatsapp, emirate, area, rating)`)
     .eq('sponsor_id', _user.id)
     .order('created_at', { ascending: false });
 
   if (error) { console.error('sponsor bookings:', error); }
+  const list = bookings || [];
 
-  const active = (bookings || []).filter(b => ['RESERVED','CONFIRMED_TRIAL','PROCESSED_FOR_VISA'].includes(b.status));
-  const completed = (bookings || []).filter(b => b.status === 'COMPLETED');
-  const totalPaid = (bookings || []).reduce((s, b) => s + (b.initial_payment || 0) + (b.final_payment || 0), 0);
+  const active = list.filter(b => ['RESERVED','CONFIRMED_TRIAL','PROCESSED_FOR_VISA'].includes(b.status));
+  const trial = list.filter(b => b.status === 'CONFIRMED_TRIAL');
+  const abroad = list.filter(b => b.booking_type === 'ABROAD' && b.status !== 'CANCELLED');
+  const completedThisYear = list.filter(b => b.status === 'COMPLETED' && new Date(b.created_at).getFullYear() === new Date().getFullYear());
+  const contracts = list.filter(b => ['CONFIRMED_TRIAL','COMPLETED'].includes(b.status));
+  const totalPaid = list.reduce((s, b) => s + (b.initial_payment || 0) + (b.final_payment || 0), 0);
 
   const nums = document.querySelectorAll('.sc-num');
   if (nums[0]) nums[0].textContent = active.length;
-  if (nums[1]) nums[1].textContent = (bookings || []).filter(b => b.status === 'PROCESSED_FOR_VISA').length;
-  if (nums[2]) nums[2].textContent = completed.length;
+  if (nums[1]) nums[1].textContent = list.filter(b => b.status === 'PROCESSED_FOR_VISA').length;
+  if (nums[2]) nums[2].textContent = list.filter(b => b.status === 'COMPLETED').length;
   if (nums[3]) nums[3].textContent = totalPaid.toLocaleString();
-  const badge = document.querySelector('.ni-badge');
-  if (badge) badge.textContent = active.length;
+  const showBadge = (id, n) => {
+    const el = document.getElementById(id);
+    if (!el) return;
+    el.textContent = n;
+    el.style.display = n > 0 ? '' : 'none';
+  };
+  showBadge('navBadgeBookings', active.length);
+  showBadge('navBadgeAbroad', abroad.length);
+
+  // ملخص سريع
+  const setTxt = (id, val) => { const el = document.getElementById(id); if (el) el.textContent = val; };
+  setTxt('qsReserved', list.filter(b => b.status === 'RESERVED').length);
+  setTxt('qsTrial', trial.length);
+  setTxt('qsAbroad', abroad.length);
+  setTxt('qsCompleted', completedThisYear.length);
+  setTxt('qsTotalPaid', totalPaid.toLocaleString() + ' د.إ');
+
+  // المكاتب المتفاعلة (مستخرجة من الحجوزات الفعلية)
+  const officesEl = document.getElementById('officesList');
+  if (officesEl) {
+    const officesMap = new Map();
+    list.forEach(b => { if (b.office_profiles) officesMap.set(b.office_id, b.office_profiles); });
+    if (officesMap.size) {
+      officesEl.innerHTML = Array.from(officesMap.values()).map(o => `
+        <div class="office-card">
+          <div class="office-avatar">${(o.office_name || '؟')[0]}</div>
+          <div style="flex:1">
+            <div class="office-name">${o.office_name || ''}</div>
+            <div class="office-det">${o.emirate || ''} — ${o.area || ''}</div>
+          </div>
+          <div class="office-rating">${o.rating ? o.rating + ' ★' : '—'}</div>
+        </div>`).join('');
+    } else {
+      officesEl.innerHTML = '<div style="padding:16px;text-align:center;color:var(--muted,#888);font-size:12px">لا يوجد تفاعل مع مكاتب بعد</div>';
+    }
+  }
+
+  // الاستقدام من الخارج
+  const abroadEl = document.getElementById('abroadContent');
+  if (abroadEl) {
+    if (abroad.length) {
+      abroadEl.innerHTML = abroad.map(b => `
+        <div class="abroad-card">
+          <div class="abroad-top">
+            <div>
+              <div class="abroad-maid-name">${b.maids?.full_name || ''}</div>
+              <div class="abroad-maid-det">${b.maids?.nationality || ''} — ${b.office_profiles?.office_name || ''}</div>
+            </div>
+            <div style="text-align:center">
+              <div class="abroad-days-big">${b.expected_arrival_days ?? '—'}</div>
+              <div class="abroad-days-lbl">يوم متبقي</div>
+            </div>
+          </div>
+        </div>`).join('');
+    } else {
+      abroadEl.innerHTML = '<div style="text-align:center;padding:40px 20px;color:var(--muted,#888)">لا توجد طلبات استقدام من الخارج بعد</div>';
+    }
+  }
+
+  // العقود
+  const contractsEl = document.getElementById('contractsList');
+  if (contractsEl) {
+    if (contracts.length) {
+      contractsEl.innerHTML = contracts.map(b => `
+        <div style="display:flex;align-items:center;justify-content:space-between;padding:14px 16px;background:var(--bg);border-radius:10px;border:1.5px solid var(--border)">
+          <div style="display:flex;align-items:center;gap:12px">
+            <div style="width:38px;height:38px;border-radius:10px;background:${b.status==='COMPLETED'?'#F0FFF4':'var(--gold-l)'};display:flex;align-items:center;justify-content:center;font-size:16px">${b.status==='COMPLETED'?'✅':'📄'}</div>
+            <div>
+              <div style="font-size:13px;font-weight:700;color:var(--dark)">${b.status==='COMPLETED'?'عقد استقدام كامل':'عقد فترة التجربة'} — ${b.maids?.full_name || ''}</div>
+              <div style="font-size:11px;color:var(--muted)">${new Date(b.created_at).toLocaleDateString('ar-AE',{day:'numeric',month:'long',year:'numeric'})}</div>
+            </div>
+          </div>
+          <a href="contracts.html?booking_id=${b.id}" style="padding:7px 14px;background:var(--gold-l);color:var(--gold-d);border-radius:8px;font-size:12px;font-weight:700;text-decoration:none">عرض</a>
+        </div>`).join('');
+    } else {
+      contractsEl.innerHTML = '<div style="text-align:center;padding:24px 20px;color:var(--muted,#888)">لا توجد عقود بعد</div>';
+    }
+  }
 
   // لا توجد حجوزات حقيقية بعد — نمسح البطاقات التجريبية الثابتة ونعرض حالة فارغة حقيقية
-  // بدل ما نتركها معروضة دايماً لأي حساب جديد بدون أي حجز فعلي
   const emptyHtml = '<div style="text-align:center;padding:40px 20px;color:var(--muted,#888)">لا توجد حجوزات بعد</div>';
   document.querySelectorAll('.bk-list').forEach(el => {
-    el.innerHTML = (bookings && bookings.length) ? el.innerHTML : emptyHtml;
+    el.innerHTML = list.length ? el.innerHTML : emptyHtml;
   });
   // TODO: عند وجود حجوزات حقيقية، يحتاج بناء دالة renderBookingCard(b) كاملة
   // تعرض بيانات كل حجز فعلياً (اسم العاملة، المكتب، الحالة، المبلغ) بدل الاكتفاء بالحالة الفارغة
 }
 
-async function loadSponsorContracts() {
+async function loadNotifications() {
   if (!_user) return;
-  const { data: contracts } = await _db
-    .from('bookings')
-    .select('id, status, created_at, maids(full_name)')
-    .eq('sponsor_id', _user.id)
-    .in('status', ['CONFIRMED_TRIAL', 'COMPLETED']);
+  const notifEl = document.getElementById('notifList');
+  if (!notifEl) return;
+  const { data: notifs, error } = await _db
+    .from('notifications')
+    .select('*')
+    .eq('user_id', _user.id)
+    .order('created_at', { ascending: false })
+    .limit(10);
 
-  if (!contracts || !contracts.length) return;
+  if (error || !notifs || !notifs.length) {
+    notifEl.innerHTML = '<div style="padding:24px 18px;text-align:center;color:var(--muted,#888);font-size:12px">لا توجد إشعارات بعد</div>';
+    return;
+  }
+  notifEl.innerHTML = notifs.map(n => `
+    <div style="display:flex;gap:12px;padding:13px 18px;border-bottom:1px solid #F5F5F5">
+      <div style="width:36px;height:36px;border-radius:10px;background:var(--gold-l);display:flex;align-items:center;justify-content:center;font-size:16px;flex-shrink:0">📋</div>
+      <div><div style="font-size:12px;color:var(--dark);font-weight:600;line-height:1.5;margin-bottom:3px">${n.message || n.title || ''}</div><div style="font-size:10px;color:var(--muted)">${new Date(n.created_at).toLocaleDateString('ar-AE',{day:'numeric',month:'long'})}</div></div>
+    </div>`).join('');
 }
 
 async function realSignOut() {
