@@ -327,63 +327,7 @@ select.m-inp{background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w
             <button class="wcard-act" onclick="showPg('bookings',null)">عرض الكل</button>
           </div>
           <div class="bk-list">
-
-            <!-- BOOKING 1 — RESERVED -->
-            <div class="bk-card">
-              <div class="bk-card-top">
-                <div class="bk-maid-info">
-                  <div class="bk-avatar">ف</div>
-                  <div>
-                    <div class="bk-maid-name">فاطمة أحمد</div>
-                    <div class="bk-maid-det">فلبينية — مكتب الأمانة — أبوظبي</div>
-                  </div>
-                </div>
-                <span class="badge reserved"><span class="badge-dot"></span>محجوز</span>
-              </div>
-              <div class="timer-box">
-                <div>
-                  <div class="timer-label">ينتهي الحجز المبدئي خلال</div>
-                  <div class="timer-val" id="timer1">02:34:18</div>
-                </div>
-                <div class="timer-right">
-                  <div class="timer-expire">قابل للتمديد مرة واحدة</div>
-                </div>
-              </div>
-              <div class="bk-actions">
-                <button class="act-btn success" onclick="openModal('continueModal')">استكمال الطلب</button>
-                <button class="act-btn outline" onclick="openModal('extendModal')">تمديد الحجز</button>
-                <button class="act-btn danger" onclick="openModal('cancelModal')">إلغاء</button>
-              </div>
-            </div>
-
-            <!-- BOOKING 2 — TRIAL -->
-            <div class="bk-card">
-              <div class="bk-card-top">
-                <div class="bk-maid-info">
-                  <div class="bk-avatar">س</div>
-                  <div>
-                    <div class="bk-maid-name">سيتي رحمة</div>
-                    <div class="bk-maid-det">إندونيسية — مكتب النور — دبي</div>
-                  </div>
-                </div>
-                <span class="badge trial"><span class="badge-dot"></span>فترة التجربة</span>
-              </div>
-              <div class="trial-counter">
-                <div class="trial-top">
-                  <span class="trial-days-label">أيام التجربة المتبقية</span>
-                  <span class="trial-days-num">3 أيام</span>
-                </div>
-                <div class="trial-bar-bg">
-                  <div class="trial-bar-fill" style="width:40%"></div>
-                </div>
-              </div>
-              <div class="bk-actions">
-                <button class="act-btn success" onclick="openModal('completeModal')">إتمام العقد</button>
-                <button class="act-btn primary" onclick="openModal('replaceModal')">استبدال</button>
-                <button class="act-btn danger" onclick="openModal('returnModal')">إرجاع</button>
-              </div>
-            </div>
-
+            <div style="text-align:center;padding:40px 20px;color:var(--muted,#888)">لا توجد حجوزات بعد</div>
           </div>
         </div>
 
@@ -417,73 +361,7 @@ select.m-inp{background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w
           <button class="search-btn" onclick="window.location.href='search.html'" style="font-size:12px;padding:7px 14px">+ حجز جديد</button>
         </div>
         <div class="bk-list" style="padding:16px">
-
-          <div class="bk-card">
-            <div class="bk-card-top">
-              <div class="bk-maid-info">
-                <div class="bk-avatar">ف</div>
-                <div>
-                  <div class="bk-maid-name">فاطمة أحمد</div>
-                  <div class="bk-maid-det">فلبينية — 28 سنة — 1,200 د.إ/شهر — مكتب الأمانة</div>
-                </div>
-              </div>
-              <span class="badge reserved"><span class="badge-dot"></span>محجوز — 3 ساعات</span>
-            </div>
-            <div class="timer-box">
-              <div><div class="timer-label">ينتهي الحجز المبدئي خلال</div><div class="timer-val" id="timer2">02:34:18</div></div>
-              <div class="timer-right"><div class="timer-expire">اليوم — بدء: 09:15 ص</div></div>
-            </div>
-            <div class="bk-actions">
-              <button class="act-btn success" onclick="openModal('continueModal')">استكمال الطلب</button>
-              <button class="act-btn outline" onclick="openModal('extendModal')">تمديد 3 ساعات</button>
-              <button class="act-btn danger" onclick="openModal('cancelModal')">إلغاء الحجز</button>
-              <button class="act-btn dark" onclick="openModal('chatModal')">التواصل مع المكتب</button>
-            </div>
-          </div>
-
-          <div class="bk-card">
-            <div class="bk-card-top">
-              <div class="bk-maid-info">
-                <div class="bk-avatar">س</div>
-                <div>
-                  <div class="bk-maid-name">سيتي رحمة</div>
-                  <div class="bk-maid-det">إندونيسية — 24 سنة — 1,100 د.إ/شهر — مكتب النور</div>
-                </div>
-              </div>
-              <span class="badge trial"><span class="badge-dot"></span>فترة التجربة</span>
-            </div>
-            <div class="trial-counter">
-              <div class="trial-top">
-                <span class="trial-days-label">اليوم 2 من 5 — متبقي 3 أيام</span>
-                <span class="trial-days-num">3 أيام</span>
-              </div>
-              <div class="trial-bar-bg"><div class="trial-bar-fill" style="width:40%"></div></div>
-            </div>
-            <div class="bk-actions">
-              <button class="act-btn success" onclick="openModal('completeModal')">إتمام العقد النهائي</button>
-              <button class="act-btn primary" onclick="openModal('replaceModal')">طلب استبدال</button>
-              <button class="act-btn danger" onclick="openModal('returnModal')">إرجاع العاملة</button>
-              <button class="act-btn dark" onclick="openModal('chatModal')">التواصل مع المكتب</button>
-            </div>
-          </div>
-
-          <div class="bk-card" style="opacity:.7">
-            <div class="bk-card-top">
-              <div class="bk-maid-info">
-                <div class="bk-avatar">م</div>
-                <div>
-                  <div class="bk-maid-name">مريم جوزيف</div>
-                  <div class="bk-maid-det">إثيوبية — 30 سنة — 900 د.إ/شهر — مكتب الأمانة</div>
-                </div>
-              </div>
-              <span class="badge completed"><span class="badge-dot"></span>مكتمل</span>
-            </div>
-            <div class="bk-actions">
-              <button class="act-btn outline" onclick="openModal('reviewModal')">تقييم المكتب</button>
-              <button class="act-btn outline" onclick="window.location.href='contracts.html'">عرض العقد</button>
-            </div>
-          </div>
-
+          <div style="text-align:center;padding:40px 20px;color:var(--muted,#888)">لا توجد حجوزات بعد</div>
         </div>
       </div>
     </div>
@@ -557,7 +435,7 @@ select.m-inp{background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w
     <div class="modal-body">
       <div class="m-info">بعد الاستكمال ستبدأ فترة التجربة رسمياً وستُخصم رسوم الأيام المتفق عليها</div>
       <div style="background:var(--bg);border-radius:12px;padding:16px;margin-bottom:16px;border:1px solid var(--border)">
-        <div style="font-size:13px;font-weight:800;color:var(--dark);margin-bottom:10px">ملخص فاطمة أحمد</div>
+        <div style="font-size:13px;font-weight:800;color:var(--dark);margin-bottom:10px">ملخص الحجز</div>
         <div style="display:flex;justify-content:space-between;font-size:13px;padding:6px 0;border-bottom:1px solid #F5F5F5"><span style="color:var(--muted)">الراتب الشهري</span><span style="font-weight:700">1,200 د.إ</span></div>
         <div style="display:flex;justify-content:space-between;font-size:13px;padding:6px 0;border-bottom:1px solid #F5F5F5"><span style="color:var(--muted)">رسوم التجربة</span><span style="font-weight:700">250 د.إ (5 أيام)</span></div>
         <div style="display:flex;justify-content:space-between;font-size:13px;padding:6px 0;border-bottom:1px solid #F5F5F5"><span style="color:var(--muted)">الدفعة المبدئية</span><span style="font-weight:700">500 د.إ</span></div>
@@ -636,7 +514,7 @@ select.m-inp{background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w
     <div class="modal-body">
       <div class="m-info">بعد الإتمام يُنشأ العقد النهائي ويُرسل إليك ولمكتب الاستقدام</div>
       <div style="background:var(--bg);border-radius:12px;padding:16px;margin-bottom:16px;border:1px solid var(--border)">
-        <div style="font-size:13px;font-weight:800;color:var(--dark);margin-bottom:10px">ملخص سيتي رحمة</div>
+        <div style="font-size:13px;font-weight:800;color:var(--dark);margin-bottom:10px">ملخص العاملة</div>
         <div style="display:flex;justify-content:space-between;font-size:13px;padding:6px 0;border-bottom:1px solid #F5F5F5"><span style="color:var(--muted)">الراتب الشهري</span><span style="font-weight:700">1,100 د.إ</span></div>
         <div style="display:flex;justify-content:space-between;font-size:13px;padding:6px 0;border-bottom:1px solid #F5F5F5"><span style="color:var(--muted)">عمولة المكتب المتبقية</span><span style="font-weight:700">2,600 د.إ</span></div>
         <div style="display:flex;justify-content:space-between;font-size:14px;padding:8px 0;font-weight:800"><span>المجموع المستحق</span><span style="color:var(--gold)">2,600 د.إ</span></div>
