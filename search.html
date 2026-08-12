@@ -618,25 +618,9 @@ async function bookMaid() {
     const bookingType = m.type === 'abroad' ? 'ABROAD' : 'LOCAL';
     const reservationExpiry = new Date(Date.now() + 3 * 60 * 60 * 1000).toISOString();
 
-    // قفل تفاؤلي: نحدّث حالة العاملة لـ BOOKED بشرط أنها لسا AVAILABLE فعلياً بقاعدة البيانات
-    // هذا يمنع حجز نفس العاملة مرتين بنفس اللحظة من شخصين مختلفين
-    const { data: updatedMaid, error: maidErr } = await _db
-      .from('maids')
-      .update({ status: 'BOOKED' })
-      .eq('id', m.id)
-      .eq('status', 'AVAILABLE')
-      .select()
-      .maybeSingle();
-
-    if (maidErr) throw maidErr;
-    if (!updatedMaid) {
-      alert('عذراً، تم حجز هذه العاملة للتو من كفيل آخر');
-      m.status = 'booked';
-      renderMaids(maids);
-      closeDetail();
-      return;
-    }
-
+    // الكفيل لا يلمس جدول maids إطلاقاً — فقط ينشئ صف حجز، وتغيير حالة العاملة
+    // يصير تلقائياً وبشكل ذري داخل قاعدة البيانات عبر trigger (دالة trg_lock_maid_on_booking)
+    // هذا يمنع مشاكل صلاحيات RLS ويضمن ثبات الحجز عند إعادة تحميل الصفحة
     const { data: booking, error: bookErr } = await _db
       .from('bookings')
       .insert({
@@ -651,8 +635,14 @@ async function bookMaid() {
       .single();
 
     if (bookErr) {
-      // فشل إنشاء الحجز -> نتراجع ونرجع العاملة AVAILABLE عشان ما تضيع من السوق بدون سبب
-      await _db.from('maids').update({ status: 'AVAILABLE' }).eq('id', m.id);
+      // كود 23514/P0001 = الـ trigger رفض الحجز لأن العاملة صارت محجوزة قبل لحظات من كفيل آخر
+      if (bookErr.message && bookErr.message.includes('MAID_NOT_AVAILABLE')) {
+        alert('عذراً، تم حجز هذه العاملة للتو من كفيل آخر');
+        m.status = 'booked';
+        renderMaids(maids);
+        closeDetail();
+        return;
+      }
       throw bookErr;
     }
 
@@ -660,6 +650,7 @@ async function bookMaid() {
     // الفعلية بالجدول أولاً (نفس النمط: لا نخمن، نفحص الجدول قبل الكتابة فيه)
 
     m.status = 'booked';
+
     renderMaids(maids);
     document.getElementById('detailContent').style.display = 'none';
     document.getElementById('bookSuccess').classList.add('show');
